@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Веб-приложение для оценки подержанных смартфонов</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Оценка подержанных смартфонов</h1>
+    <nav>
+      <ul>
+        <li><a href="login.html">Вход / Регистрация</a></li>
+        <li><a href="data.html">Данные о смартфонах</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <section>
+    <h2>Добавить смартфон</h2>
+    <form id="addPhoneForm">
+      <label for="phoneName">Наименование:</label>
+      <input type="text" id="phoneName" name="phoneName" required>
+      
+      <label for="phoneBrand">Бренд:</label>
+      <select id="phoneBrand" name="phoneBrand">
+        <option value="1">Apple</option>
+        <option value="2">Samsung</option>
+        <option value="3">Google</option>
+        <option value="4">Huawei</option>
+        <option value="5">Sony</option>
+      </select>
+      
+      <label for="phoneMemory">Объем памяти (ГБ):</label>
+      <input type="number" id="phoneMemory" name="phoneMemory" required>
+      
+      <label for="phoneCondition">Состояние:</label>
+      <select id="phoneCondition" name="phoneCondition">
+        <option value="1">Хорошее</option>
+        <option value="2">Отличное</option>
+        <option value="3">Среднее</option>
+      </select>
+
+      <label for="phonePrice">Цена (₽):</label>
+      <input type="number" id="phonePrice" name="phonePrice" required>
+      
+      <button type="submit">Добавить смартфон</button>
+    </form>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Все права защищены.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
