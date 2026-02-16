@@ -2,13 +2,13 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Вход в систему</title>
+<title>Оценка стоимости смартфонов</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-<h2>Авторизация</h2>
+<div class="login-container">
+<h1>Оценка поддержанных смартфонов</h1>
 
 <form id="loginForm">
 <input type="text" id="login" placeholder="Логин" required>
@@ -16,8 +16,7 @@
 <button type="submit">Войти</button>
 </form>
 
-<button id="guestBtn">Войти как гость</button>
-
+<button onclick="loginAsGuest()" class="guest-btn">Войти как гость</button>
 </div>
 
 <script src="script.js"></script>
