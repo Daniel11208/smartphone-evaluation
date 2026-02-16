@@ -1,76 +1,41 @@
 body {
-margin: 0;
-font-family: Arial, sans-serif;
-background: linear-gradient(135deg, #667eea, #764ba2);
-display: flex;
-justify-content: center;
-align-items: center;
-min-height: 100vh;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
 }
 
 .card {
-background: white;
-padding: 40px;
-border-radius: 15px;
-box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-width: 400px;
-text-align: center;
-}
-
-.wide {
-width: 700px;
-}
-
-h1, h2 {
-margin-bottom: 20px;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 input {
-width: 100%;
-padding: 10px;
-margin: 8px 0;
-border-radius: 8px;
-border: 1px solid #ccc;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
 button {
-width: 100%;
-padding: 10px;
-border: none;
-border-radius: 8px;
-background: #667eea;
-color: white;
-cursor: pointer;
-margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
 }
 
 button:hover {
-background: #5563c1;
-}
-
-.secondary {
-background: #999;
-}
-
-.secondary:hover {
-background: #777;
-}
-
-.menu a {
-display: block;
-margin: 15px 0;
-font-weight: bold;
-text-decoration: none;
-color: #667eea;
-}
-
-table {
-width: 100%;
-margin-top: 20px;
-border-collapse: collapse;
-}
-
-th, td {
-border: 1px solid #ddd;
-padding: 8px;
+    background: #5a67d8;
 }
