@@ -1,20 +1,24 @@
 body {
 margin: 0;
 font-family: Arial, sans-serif;
-background: linear-gradient(135deg, #4e73df, #1cc88a);
+background: linear-gradient(135deg, #667eea, #764ba2);
 display: flex;
 justify-content: center;
 align-items: center;
-height: 100vh;
+min-height: 100vh;
 }
 
-.login-container, .panel {
+.card {
 background: white;
 padding: 40px;
 border-radius: 15px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+box-shadow: 0 15px 40px rgba(0,0,0,0.2);
 width: 400px;
 text-align: center;
+}
+
+.wide {
+width: 700px;
 }
 
 h1, h2 {
@@ -24,7 +28,7 @@ margin-bottom: 20px;
 input {
 width: 100%;
 padding: 10px;
-margin: 10px 0;
+margin: 8px 0;
 border-radius: 8px;
 border: 1px solid #ccc;
 }
@@ -34,26 +38,30 @@ width: 100%;
 padding: 10px;
 border: none;
 border-radius: 8px;
-background: #4e73df;
+background: #667eea;
 color: white;
 cursor: pointer;
 margin-top: 10px;
 }
 
 button:hover {
-background: #2e59d9;
+background: #5563c1;
 }
 
-.guest-btn {
-background: gray;
+.secondary {
+background: #999;
+}
+
+.secondary:hover {
+background: #777;
 }
 
 .menu a {
 display: block;
 margin: 15px 0;
-text-decoration: none;
-color: #4e73df;
 font-weight: bold;
+text-decoration: none;
+color: #667eea;
 }
 
 table {
