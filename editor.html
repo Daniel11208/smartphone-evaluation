@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Редактор</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card wide">
+<h2>Редактирование смартфонов</h2>
+<p id="roleText"></p>
+
+<div id="formBlock">
+<input id="brand" placeholder="Бренд">
+<input id="model" placeholder="Модель">
+<input id="price" placeholder="Цена">
+<button onclick="addPhone()">Добавить</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Бренд</th>
+<th>Модель</th>
+<th>Цена</th>
+<th id="deleteCol">Удалить</th>
+</tr>
+</thead>
+<tbody id="phoneTable"></tbody>
+</table>
+
+<button onclick="goDatabase()">Перейти в БД</button>
+<button onclick="logout()">Выйти</button>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
