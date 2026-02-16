@@ -1,37 +1,37 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>База смартфонов</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>База</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="card wide">
-<h2>База смартфонов</h2>
+<div class="card">
+    <h2>Страница базы</h2>
 
-<form id="phoneForm">
-<input type="text" id="brand" placeholder="Бренд" required>
-<input type="text" id="model" placeholder="Модель" required>
-<input type="number" id="price" placeholder="Цена (₽)" required>
-<button type="submit">Добавить</button>
-</form>
+    <p id="access"></p>
 
-<table>
-<thead>
-<tr>
-<th>Бренд</th>
-<th>Модель</th>
-<th>Цена</th>
-<th>Удалить</th>
-</tr>
-</thead>
-<tbody id="phoneTable"></tbody>
-</table>
-
-<button onclick="goBack()" class="secondary">Назад</button>
+    <button onclick="goBack()">Назад</button>
 </div>
 
-<script src="script.js"></script>
+<script>
+const role = localStorage.getItem("role");
+
+if (!role) {
+    window.location.href = "index.html";
+}
+
+if (role === "admin") {
+    document.getElementById("access").innerText = "У вас полный доступ (Admin)";
+} else {
+    document.getElementById("access").innerText = "Ограниченный доступ (User)";
+}
+
+function goBack() {
+    window.location.href = "config.html";
+}
+</script>
+
 </body>
 </html>
