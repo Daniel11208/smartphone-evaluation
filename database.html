@@ -7,16 +7,30 @@
 </head>
 <body>
 
-<header>
-<h2>База данных</h2>
-<button onclick="goDashboard()">Назад</button>
-</header>
+<div class="panel">
+<h2>Смартфоны</h2>
 
-<h3>Смартфоны</h3>
-<table id="dbPhones"></table>
+<form id="phoneForm">
+<input type="text" id="brand" placeholder="Бренд">
+<input type="text" id="model" placeholder="Модель">
+<input type="number" id="price" placeholder="Цена">
+<button type="submit">Добавить</button>
+</form>
 
-<h3>Пользователи</h3>
-<table id="dbUsers"></table>
+<table>
+<thead>
+<tr>
+<th>Бренд</th>
+<th>Модель</th>
+<th>Цена</th>
+<th>Действия</th>
+</tr>
+</thead>
+<tbody id="phoneTable"></tbody>
+</table>
+
+<button onclick="goBack()">Назад</button>
+</div>
 
 <script src="script.js"></script>
 </body>
