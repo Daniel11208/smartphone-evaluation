@@ -1,24 +1,39 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Вход | Оценка смартфонов</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="card">
-<h1>Оценка поддержанных смартфонов</h1>
+    <h2>Авторизация</h2>
 
-<form id="loginForm">
-<input type="text" id="login" placeholder="Логин" required>
-<input type="password" id="password" placeholder="Пароль" required>
-<button type="submit">Войти</button>
-</form>
+    <input type="text" id="login" placeholder="Логин">
+    <input type="password" id="password" placeholder="Пароль">
 
-<button onclick="loginAsGuest()" class="secondary">Войти как гость</button>
+    <button onclick="login()">Войти</button>
 </div>
 
-<script src="script.js"></script>
+<script>
+function login() {
+    const login = document.getElementById("login").value;
+    const password = document.getElementById("password").value;
+
+    if (login === "admin" && password === "admin") {
+        localStorage.setItem("role", "admin");
+        window.location.href = "config.html";
+    } 
+    else if (login === "user" && password === "user") {
+        localStorage.setItem("role", "user");
+        window.location.href = "config.html";
+    } 
+    else {
+        alert("Неверные данные");
+    }
+}
+</script>
+
 </body>
 </html>
