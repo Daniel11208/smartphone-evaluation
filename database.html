@@ -2,18 +2,18 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>База данных</title>
+<title>База смартфонов</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="panel">
-<h2>Смартфоны</h2>
+<div class="card wide">
+<h2>База смартфонов</h2>
 
 <form id="phoneForm">
-<input type="text" id="brand" placeholder="Бренд">
-<input type="text" id="model" placeholder="Модель">
-<input type="number" id="price" placeholder="Цена">
+<input type="text" id="brand" placeholder="Бренд" required>
+<input type="text" id="model" placeholder="Модель" required>
+<input type="number" id="price" placeholder="Цена (₽)" required>
 <button type="submit">Добавить</button>
 </form>
 
@@ -23,13 +23,13 @@
 <th>Бренд</th>
 <th>Модель</th>
 <th>Цена</th>
-<th>Действия</th>
+<th>Удалить</th>
 </tr>
 </thead>
 <tbody id="phoneTable"></tbody>
 </table>
 
-<button onclick="goBack()">Назад</button>
+<button onclick="goBack()" class="secondary">Назад</button>
 </div>
 
 <script src="script.js"></script>
