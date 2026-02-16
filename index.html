@@ -1,39 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Вход</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Вход</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="card">
-    <h2>Авторизация</h2>
+<h2>Вход в систему</h2>
 
-    <input type="text" id="login" placeholder="Логин">
-    <input type="password" id="password" placeholder="Пароль">
+<input id="login" placeholder="Логин">
+<input id="password" type="password" placeholder="Пароль">
 
-    <button onclick="login()">Войти</button>
+<button onclick="login()">Войти</button>
 </div>
 
-<script>
-function login() {
-    const login = document.getElementById("login").value;
-    const password = document.getElementById("password").value;
-
-    if (login === "admin" && password === "admin") {
-        localStorage.setItem("role", "admin");
-        window.location.href = "config.html";
-    } 
-    else if (login === "user" && password === "user") {
-        localStorage.setItem("role", "user");
-        window.location.href = "config.html";
-    } 
-    else {
-        alert("Неверные данные");
-    }
-}
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
