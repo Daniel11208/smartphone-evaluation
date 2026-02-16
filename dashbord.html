@@ -2,19 +2,22 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Редактирование</title>
+<title>Оценка стоимости смартфонов</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-<h2>Панель управления</h2>
-<button onclick="logout()">Выйти</button>
-<button onclick="goDatabase()">Перейти в БД</button>
-</header>
+<div class="login-container">
+<h1>Оценка поддержанных смартфонов</h1>
 
-<h3>Смартфоны</h3>
-<table id="phonesTable"></table>
+<form id="loginForm">
+<input type="text" id="login" placeholder="Логин" required>
+<input type="password" id="password" placeholder="Пароль" required>
+<button type="submit">Войти</button>
+</form>
+
+<button onclick="loginAsGuest()" class="guest-btn">Войти как гость</button>
+</div>
 
 <script src="script.js"></script>
 </body>
