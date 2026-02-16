@@ -8,9 +8,42 @@
 <body>
 
 <div class="card">
-    <h2>Страница конфигурации</h2>
-
+    <h2>Конфигурация телефона</h2>
     <p id="roleText"></p>
+
+    <select id="brand">
+        <option value="">Выберите бренд</option>
+        <option>Apple</option>
+        <option>Samsung</option>
+        <option>Xiaomi</option>
+    </select>
+
+    <select id="model">
+        <option value="">Выберите модель</option>
+        <option>iPhone 15</option>
+        <option>Galaxy S23</option>
+        <option>Redmi Note 13</option>
+    </select>
+
+    <select id="year">
+        <option value="">Год выпуска</option>
+        <option>2022</option>
+        <option>2023</option>
+        <option>2024</option>
+    </select>
+
+    <select id="price">
+        <option value="">Цена</option>
+        <option>До 500$</option>
+        <option>500$ - 1000$</option>
+        <option>1000$+</option>
+    </select>
+
+    <button onclick="showResult()">Показать конфигурацию</button>
+
+    <p id="result"></p>
+
+    <hr>
 
     <button onclick="goDatabase()">Перейти в базу</button>
     <button onclick="logout()">Выйти</button>
@@ -24,6 +57,16 @@ if (!role) {
 }
 
 document.getElementById("roleText").innerText = "Вы вошли как: " + role;
+
+function showResult() {
+    const brand = document.getElementById("brand").value;
+    const model = document.getElementById("model").value;
+    const year = document.getElementById("year").value;
+    const price = document.getElementById("price").value;
+
+    document.getElementById("result").innerText =
+        "Вы выбрали: " + brand + " " + model + ", " + year + ", " + price;
+}
 
 function goDatabase() {
     window.location.href = "database.html";
