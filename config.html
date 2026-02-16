@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Конфигурация</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+    <h2>Страница конфигурации</h2>
+
+    <p id="roleText"></p>
+
+    <button onclick="goDatabase()">Перейти в базу</button>
+    <button onclick="logout()">Выйти</button>
+</div>
+
+<script>
+const role = localStorage.getItem("role");
+
+if (!role) {
+    window.location.href = "index.html";
+}
+
+document.getElementById("roleText").innerText = "Вы вошли как: " + role;
+
+function goDatabase() {
+    window.location.href = "database.html";
+}
+
+function logout() {
+    localStorage.removeItem("role");
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
