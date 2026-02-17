@@ -1,44 +1,34 @@
-// ===== Пользователи =====
 const users=[
 {login:"admin1",password:"adminpass",role:"admin"},
 {login:"user1",password:"pass123",role:"user"},
 {login:"guest",password:"guest",role:"guest"}
 ];
 
-// ===== Данные смартфонов =====
-const defaultPhones=[
-{name:"iPhone 11",brand:"Apple",year:2019,memory:64,condition:"Хорошее",price:25000},
-{name:"Galaxy S10",brand:"Samsung",year:2019,memory:128,condition:"Отличное",price:18000},
-{name:"Pixel 4",brand:"Google",year:2019,memory:64,condition:"Среднее",price:15000},
-{name:"P30 Pro",brand:"Huawei",year:2019,memory:256,condition:"Хорошее",price:20000},
-{name:"Xperia 5",brand:"Sony",year:2019,memory:128,condition:"Отличное",price:22000},
-{name:"iPhone 12",brand:"Apple",year:2020,memory:128,condition:"Хорошее",price:30000},
-{name:"Galaxy S20",brand:"Samsung",year:2020,memory:128,condition:"Среднее",price:27000},
-{name:"Pixel 5",brand:"Google",year:2020,memory:128,condition:"Отличное",price:28000},
-{name:"Mate 40 Pro",brand:"Huawei",year:2020,memory:256,condition:"Хорошее",price:35000},
-{name:"Xperia 1 II",brand:"Sony",year:2020,memory:256,condition:"Среднее",price:40000},
-{name:"iPhone 13",brand:"Apple",year:2021,memory:256,condition:"Отличное",price:38000},
-{name:"Galaxy S21",brand:"Samsung",year:2021,memory:256,condition:"Хорошее",price:32000},
-{name:"Pixel 6",brand:"Google",year:2021,memory:256,condition:"Среднее",price:29000},
-{name:"P50 Pro",brand:"Huawei",year:2021,memory:512,condition:"Отличное",price:45000},
-{name:"Xperia 1 III",brand:"Sony",year:2021,memory:256,condition:"Хорошее",price:48000}
-];
+const models={
+Apple:["iPhone 11","iPhone 12","iPhone 13"],
+Samsung:["Galaxy S10","Galaxy S20","Galaxy S21"],
+Google:["Pixel 4","Pixel 5","Pixel 6"],
+Huawei:["P30 Pro","Mate 40 Pro","P50 Pro"],
+Sony:["Xperia 5","Xperia 1 II","Xperia 1 III"]
+};
 
-// если первый запуск
 if(!localStorage.getItem("phones")){
-localStorage.setItem("phones",JSON.stringify(defaultPhones));
+localStorage.setItem("phones",JSON.stringify([]));
 }
 
-// ===== Вход =====
 function login(){
 const l=document.getElementById("login").value.trim();
 const p=document.getElementById("password").value.trim();
 const user=users.find(u=>u.login===l&&u.password===p);
-
 if(user){
 localStorage.setItem("role",user.role);
 window.location="editor.html";
 }else alert("Неверные данные");
+}
+
+function loginGuest(){
+localStorage.setItem("role","guest");
+window.location="editor.html";
 }
 
 function logout(){
@@ -46,14 +36,28 @@ localStorage.removeItem("role");
 window.location="index.html";
 }
 
-// ===== РЕДАКТОР =====
+function updateModels(){
+const brand=document.getElementById("brand").value;
+const modelSelect=document.getElementById("model");
+modelSelect.innerHTML="<option value=''>Наименование</option>";
+if(models[brand]){
+models[brand].forEach(m=>{
+modelSelect.innerHTML+=`<option>${m}</option>`;
+});
+}
+}
+
 if(location.pathname.includes("editor.html")){
 
 const role=localStorage.getItem("role");
 if(!role) window.location="index.html";
 
-document.getElementById("roleText").innerHTML=
-`<span class="role-badge">Роль: ${role}</span>`;
+document.getElementById("roleText").innerHTML=`Роль: ${role}`;
+
+if(role==="guest"){
+document.querySelector(".form-grid").style.display="none";
+document.getElementById("delHead").style.display="none";
+}
 
 let phones=JSON.parse(localStorage.getItem("phones"));
 render();
@@ -64,15 +68,34 @@ table.innerHTML="";
 phones.forEach((p,i)=>{
 table.innerHTML+=`
 <tr>
-<td>${p.name}</td>
 <td>${p.brand}</td>
+<td>${p.model}</td>
 <td>${p.year}</td>
 <td>${p.memory}GB</td>
 <td>${p.condition}</td>
 <td>${p.price}₽</td>
-${role==="admin"?`<td><button onclick="deletePhone(${i})">Удалить</button></td>`:""}
+${role==="admin"?`<td><button onclick="deletePhone(${i})">X</button></td>`:""}
 </tr>`;
 });
+}
+
+window.addPhone=function(){
+if(role==="guest")return;
+
+const phone={
+brand:brand.value,
+model:model.value,
+year:year.value,
+memory:memory.value,
+condition:condition.value,
+price:price.value
+};
+
+if(!phone.brand||!phone.model||!phone.year) return;
+
+phones.push(phone);
+localStorage.setItem("phones",JSON.stringify(phones));
+render();
 }
 
 window.deletePhone=function(i){
@@ -82,17 +105,14 @@ localStorage.setItem("phones",JSON.stringify(phones));
 render();
 }
 
-window.goDatabase=()=>location="database.html";
+window.goDB=()=>window.location="database.html";
 }
 
-// ===== БД =====
 if(location.pathname.includes("database.html")){
-
 const role=localStorage.getItem("role");
 if(!role) window.location="index.html";
 
-document.getElementById("dbRole").innerHTML=
-`<span class="role-badge">Роль: ${role}</span>`;
+document.getElementById("dbRole").innerHTML=`Роль: ${role}`;
 
 let phones=JSON.parse(localStorage.getItem("phones"));
 const table=document.getElementById("dbTable");
@@ -100,8 +120,8 @@ const table=document.getElementById("dbTable");
 phones.forEach(p=>{
 table.innerHTML+=`
 <tr>
-<td>${p.name}</td>
 <td>${p.brand}</td>
+<td>${p.model}</td>
 <td>${p.year}</td>
 <td>${p.memory}GB</td>
 <td>${p.condition}</td>
@@ -109,5 +129,5 @@ table.innerHTML+=`
 </tr>`;
 });
 
-window.goEditor=()=>location="editor.html";
+window.goEditor=()=>window.location="editor.html";
 }
