@@ -6,6 +6,8 @@ const USERS = [
 ];
 
 const PHONES_KEY = "phones";
+const MIN_PRICE = 500;
+const MAX_PRICE = 200000;
 
 const SMARTPHONES = {
   Apple: ["iPhone 11", "iPhone 12", "iPhone 13"],
@@ -22,6 +24,12 @@ const ACCESSORIES = {
   Huawei: ["FreeBuds 4", "SuperCharge"],
   Sony: ["WF-1000XM4", "LinkBuds Charger"]
 };
+
+const CONDITIONS = ["Хорошее", "Отличное", "Среднее"];
+const STORAGES = ["64", "128", "256", "512"];
+const YEARS = ["2019", "2020", "2021"];
+const BRANDS = ["Apple", "Samsung", "Google", "Huawei", "Sony"];
+const ACCESSORY_KINDS = ["Наушники", "Зарядка", "Чехлы", "Экраны", "Батареи"];
 
 const SMARTPHONE_BASE_PRICES = {
   "iPhone 11": 25000,
@@ -54,39 +62,69 @@ const ACCESSORY_BASE_PRICES = {
   "LinkBuds Charger": 2000
 };
 
-const CONDITION_MULTIPLIER = {
-  Отличное: 1,
-  Хорошее: 0.93,
-  Среднее: 0.85
-};
+const CONDITION_MULTIPLIER = { Отличное: 1, Хорошее: 0.93, Среднее: 0.85 };
+const STORAGE_MULTIPLIER = { "64": 0.95, "128": 1, "256": 1.08, "512": 1.15 };
+const YEAR_MULTIPLIER = { "2019": 0.93, "2020": 0.98, "2021": 1.03 };
+const ACCESSORY_KIND_MULTIPLIER = { Наушники: 1.06, Зарядка: 0.96, Чехлы: 0.8, Экраны: 1.1, Батареи: 1.02 };
 
-const STORAGE_MULTIPLIER = {
-  "64": 0.95,
-  "128": 1,
-  "256": 1.08,
-  "512": 1.15
-};
+function clampPrice(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 0;
+  return Math.max(MIN_PRICE, Math.min(MAX_PRICE, Math.round(num / 100) * 100));
+}
 
-const YEAR_MULTIPLIER = {
-  "2019": 0.93,
-  "2020": 0.98,
-  "2021": 1.03
-};
+function getModelList(type, brand) {
+  if (!type || !brand) return [];
+  if (type === "smartphone") return SMARTPHONES[brand] || [];
+  if (type === "accessory") return ACCESSORIES[brand] || [];
+  return [];
+}
 
-const ACCESSORY_KIND_MULTIPLIER = {
-  Наушники: 1.06,
-  Зарядка: 0.96,
-  Чехлы: 0.8,
-  Экраны: 1.1,
-  Батареи: 1.02
-};
+function isValidRecord(item) {
+  if (!["smartphone", "accessory"].includes(item.itemType)) return false;
+  if (!CONDITIONS.includes(item.condition)) return false;
+  if (!STORAGES.includes(item.storage)) return false;
+  if (!YEARS.includes(item.year)) return false;
+  if (!BRANDS.includes(item.brand)) return false;
+
+  const allowedModels = getModelList(item.itemType, item.brand);
+  if (!allowedModels.includes(item.model)) return false;
+
+  if (item.itemType === "accessory") {
+    if (!ACCESSORY_KINDS.includes(item.accessoryKind)) return false;
+  } else if (item.accessoryKind) {
+    return false;
+  }
+
+  const price = Number(item.price);
+  if (!Number.isInteger(price) || price < MIN_PRICE || price > MAX_PRICE) return false;
+  return true;
+}
+
+function sanitizeRecord(input) {
+  const item = {
+    itemType: String(input.itemType || ""),
+    accessoryKind: String(input.accessoryKind || ""),
+    condition: String(input.condition || ""),
+    storage: String(input.storage || ""),
+    year: String(input.year || ""),
+    brand: String(input.brand || ""),
+    model: String(input.model || ""),
+    price: clampPrice(input.price)
+  };
+
+  return isValidRecord(item) ? item : null;
+}
 
 function getPhones() {
-  return JSON.parse(localStorage.getItem(PHONES_KEY) || "[]");
+  const raw = JSON.parse(localStorage.getItem(PHONES_KEY) || "[]");
+  if (!Array.isArray(raw)) return [];
+  return raw.map(sanitizeRecord).filter(Boolean);
 }
 
 function savePhones(phones) {
-  localStorage.setItem(PHONES_KEY, JSON.stringify(phones));
+  const cleaned = Array.isArray(phones) ? phones.map(sanitizeRecord).filter(Boolean) : [];
+  localStorage.setItem(PHONES_KEY, JSON.stringify(cleaned));
 }
 
 function getRole() {
@@ -131,11 +169,19 @@ function logout() {
   window.location.href = "index.html";
 }
 
-function getModelList(type, brand) {
-  if (!type || !brand) return [];
-  if (type === "smartphone") return SMARTPHONES[brand] || [];
-  if (type === "accessory") return ACCESSORIES[brand] || [];
-  return [];
+function calculatePrice(item) {
+  const conditionM = CONDITION_MULTIPLIER[item.condition] || 1;
+
+  if (item.itemType === "accessory") {
+    const base = ACCESSORY_BASE_PRICES[item.model] || 0;
+    const kindM = ACCESSORY_KIND_MULTIPLIER[item.accessoryKind] || 1;
+    return clampPrice(base * conditionM * kindM);
+  }
+
+  const base = SMARTPHONE_BASE_PRICES[item.model] || 0;
+  const storageM = STORAGE_MULTIPLIER[item.storage] || 1;
+  const yearM = YEAR_MULTIPLIER[item.year] || 1;
+  return clampPrice(base * conditionM * storageM * yearM);
 }
 
 function updateModels() {
@@ -164,23 +210,6 @@ function updateModels() {
   }
 }
 
-function calculatePrice(item) {
-  const conditionM = CONDITION_MULTIPLIER[item.condition] || 1;
-
-  if (item.itemType === "accessory") {
-    const base = ACCESSORY_BASE_PRICES[item.model] || 0;
-    const kindM = ACCESSORY_KIND_MULTIPLIER[item.accessoryKind] || 1;
-    const computed = base * conditionM * kindM;
-    return Math.round(computed / 100) * 100;
-  }
-
-  const base = SMARTPHONE_BASE_PRICES[item.model] || 0;
-  const storageM = STORAGE_MULTIPLIER[item.storage] || 1;
-  const yearM = YEAR_MULTIPLIER[item.year] || 1;
-  const computed = base * conditionM * storageM * yearM;
-  return Math.round(computed / 100) * 100;
-}
-
 function updatePricePreview() {
   const priceInput = document.getElementById("price");
   if (!priceInput) return;
@@ -195,7 +224,7 @@ function updatePricePreview() {
     model: document.getElementById("model")?.value
   };
 
-  if (!current.itemType || !current.condition || !current.brand || !current.model) {
+  if (!current.itemType || !current.condition || !current.storage || !current.year || !current.brand || !current.model) {
     priceInput.value = "";
     return;
   }
@@ -205,8 +234,7 @@ function updatePricePreview() {
     return;
   }
 
-  const value = calculatePrice(current);
-  priceInput.value = value ? `${value}` : "";
+  priceInput.value = String(calculatePrice(current));
 }
 
 function createCell(value) {
@@ -218,19 +246,21 @@ function createCell(value) {
 function deleteRow(index, tableId, role) {
   if (role !== "admin") return;
   const list = getPhones();
+  if (index < 0 || index >= list.length) return;
   list.splice(index, 1);
   savePhones(list);
-  renderTable(tableId, list, role);
+  renderTable(tableId, getPhones(), role);
 }
 
 function renderTable(tableId, rows, role) {
   const tbody = document.getElementById(tableId);
   if (!tbody) return;
 
+  const cleanRows = Array.isArray(rows) ? rows.map(sanitizeRecord).filter(Boolean) : [];
   tbody.innerHTML = "";
-  const admin = role === "admin";
 
-  if (!rows.length) {
+  const admin = role === "admin";
+  if (!cleanRows.length) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     td.colSpan = admin ? 9 : 8;
@@ -241,7 +271,7 @@ function renderTable(tableId, rows, role) {
     return;
   }
 
-  rows.forEach((row, index) => {
+  cleanRows.forEach((row, index) => {
     const tr = document.createElement("tr");
     tr.appendChild(createCell(row.itemType === "accessory" ? "Аксессуар" : "Смартфон"));
     tr.appendChild(createCell(row.accessoryKind || "-"));
@@ -265,6 +295,13 @@ function renderTable(tableId, rows, role) {
 
     tbody.appendChild(tr);
   });
+}
+
+function initIndexPage() {
+  const role = getRole();
+  if (role) {
+    window.location.href = "editor.html";
+  }
 }
 
 function initEditorPage() {
@@ -301,25 +338,18 @@ function initEditorPage() {
       price: document.getElementById("price").value
     };
 
-    const required = [item.itemType, item.condition, item.storage, item.year, item.brand, item.model, item.price];
-    if (required.some((v) => !v)) {
-      alert("Заполните все обязательные поля");
-      return;
-    }
+    item.price = calculatePrice(item);
 
-    if (item.itemType === "accessory" && !item.accessoryKind) {
-      alert("Выберите вид аксессуаров");
+    const normalized = sanitizeRecord(item);
+    if (!normalized) {
+      alert("Проверьте поля: неверные данные или выход за допустимые значения");
       return;
-    }
-
-    if (item.itemType === "smartphone") {
-      item.accessoryKind = "";
     }
 
     const list = getPhones();
-    list.push(item);
+    list.push(normalized);
     savePhones(list);
-    renderTable("phoneTable", list, role);
+    renderTable("phoneTable", getPhones(), role);
 
     document.getElementById("phoneForm").reset();
     updateModels();
@@ -352,6 +382,12 @@ function initDatabasePage() {
 
 if (!localStorage.getItem(PHONES_KEY)) {
   savePhones([]);
+} else {
+  savePhones(getPhones());
+}
+
+if (location.pathname.endsWith("index.html") || location.pathname === "/") {
+  initIndexPage();
 }
 
 if (location.pathname.endsWith("editor.html")) {
