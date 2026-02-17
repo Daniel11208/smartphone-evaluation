@@ -7,13 +7,17 @@
 </head>
 <body>
 
-<div class="card">
+<div class="card small">
 <h2>Вход в систему</h2>
 
 <input id="login" placeholder="Логин">
 <input id="password" type="password" placeholder="Пароль">
 
+<div class="btn-row">
 <button onclick="login()">Войти</button>
+<button class="secondary" onclick="loginGuest()">Гость</button>
+</div>
+
 </div>
 
 <script src="script.js"></script>
