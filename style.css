@@ -12,14 +12,13 @@ align-items:center;
 background:white;
 padding:30px;
 border-radius:20px;
-width:900px;
+width:1000px;
 box-shadow:0 15px 35px rgba(0,0,0,0.2);
 }
 
-h2{
-text-align:center;
-margin-bottom:20px;
-}
+.small{width:400px;}
+
+h2{text-align:center;margin-bottom:20px;}
 
 .form-grid{
 display:grid;
@@ -32,21 +31,25 @@ select,input{
 padding:10px;
 border-radius:10px;
 border:1px solid #ccc;
-font-size:14px;
 }
 
 button{
 padding:10px 15px;
 border:none;
 border-radius:10px;
-cursor:pointer;
 background:#667eea;
 color:white;
-transition:0.2s;
+cursor:pointer;
 }
 
-button:hover{
-background:#5a67d8;
+button:hover{background:#5a67d8;}
+
+.secondary{background:#888;}
+
+.btn-row{
+display:flex;
+gap:10px;
+margin-top:15px;
 }
 
 table{
@@ -65,12 +68,4 @@ td{
 padding:10px;
 border-bottom:1px solid #ddd;
 text-align:center;
-}
-
-.role-badge{
-padding:5px 10px;
-border-radius:8px;
-background:#eee;
-display:inline-block;
-margin-bottom:15px;
 }
