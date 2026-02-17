@@ -2,20 +2,56 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Редактор</title>
+<title>Редактирование</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="card wide">
+<div class="card">
 <h2>Редактирование смартфонов</h2>
 <p id="roleText"></p>
 
-<div id="formBlock">
-<input id="brand" placeholder="Бренд">
-<input id="model" placeholder="Модель">
+<div class="form-grid">
+
+<select id="brand" onchange="updateModels()">
+<option value="">Бренд</option>
+<option>Apple</option>
+<option>Samsung</option>
+<option>Google</option>
+<option>Huawei</option>
+<option>Sony</option>
+</select>
+
+<select id="model">
+<option value="">Наименование</option>
+</select>
+
+<select id="year">
+<option value="">Год</option>
+<option>2019</option>
+<option>2020</option>
+<option>2021</option>
+</select>
+
+<select id="memory">
+<option value="">Память</option>
+<option>64</option>
+<option>128</option>
+<option>256</option>
+<option>512</option>
+</select>
+
+<select id="condition">
+<option value="">Состояние</option>
+<option>Хорошее</option>
+<option>Отличное</option>
+<option>Среднее</option>
+</select>
+
 <input id="price" placeholder="Цена">
+
 <button onclick="addPhone()">Добавить</button>
+
 </div>
 
 <table>
@@ -23,15 +59,20 @@
 <tr>
 <th>Бренд</th>
 <th>Модель</th>
+<th>Год</th>
+<th>Память</th>
+<th>Состояние</th>
 <th>Цена</th>
-<th id="deleteCol">Удалить</th>
+<th id="delHead">Удалить</th>
 </tr>
 </thead>
 <tbody id="phoneTable"></tbody>
 </table>
 
-<button onclick="goDatabase()">Перейти в БД</button>
+<div class="btn-row">
+<button onclick="goDB()">Перейти в БД</button>
 <button onclick="logout()">Выйти</button>
+</div>
 
 </div>
 
