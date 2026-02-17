@@ -3,64 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Оценка смартфонов</title>
+  <title>Оценка смартфонов и аксессуаров</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="card">
-    <h2>Форма оценки смартфона</h2>
+    <h2>Оценка смартфонов и аксессуаров</h2>
     <p id="roleText"></p>
     <p id="guestNote" class="guest-note" style="display:none;">Вы вошли как гость: можно только смотреть записи.</p>
 
-    <form id="phoneForm" class="form-grid" onsubmit="event.preventDefault(); addPhone();">
-      <select id="brand" onchange="updateModels()">
-        <option value="">Бренд</option>
-        <option value="Apple">Apple</option>
-        <option value="Samsung">Samsung</option>
-        <option value="Google">Google</option>
-        <option value="Xiaomi">Xiaomi</option>
-        <option value="Huawei">Huawei</option>
+    <form id="phoneForm" class="form-grid" onsubmit="event.preventDefault(); addItem();">
+      <select id="itemType" onchange="updateModels(); updatePricePreview();">
+        <option value="">Тип записи</option>
+        <option value="smartphone">Смартфон</option>
+        <option value="accessory">Аксессуар</option>
       </select>
 
-      <select id="model">
-        <option value="">Модель</option>
+      <select id="accessoryKind" onchange="updatePricePreview()">
+        <option value="">Вид аксессуаров</option>
+        <option>Наушники</option>
+        <option>Зарядка</option>
+        <option>Чехлы</option>
+        <option>Экраны</option>
+        <option>Батареи</option>
       </select>
 
-      <select id="year">
-        <option value="">Год модели</option>
-      </select>
-
-      <select id="condition">
+      <select id="condition" onchange="updatePricePreview()">
         <option value="">Состояние</option>
-        <option>Новое</option>
-        <option>Отличное</option>
         <option>Хорошее</option>
+        <option>Отличное</option>
         <option>Среднее</option>
       </select>
 
-      <select id="storage">
-        <option value="">Память (ГБ)</option>
+      <select id="storage" onchange="updatePricePreview()">
+        <option value="">Объем памяти (ГБ)</option>
         <option>64</option>
         <option>128</option>
         <option>256</option>
         <option>512</option>
-        <option>1024</option>
       </select>
 
-      <select id="ram">
-        <option value="">RAM (ГБ)</option>
-        <option>4</option>
-        <option>6</option>
-        <option>8</option>
-        <option>12</option>
-        <option>16</option>
+      <select id="year" onchange="updatePricePreview()">
+        <option value="">Год выпуска</option>
+        <option>2019</option>
+        <option>2020</option>
+        <option>2021</option>
       </select>
 
-      <input id="battery" type="number" min="1000" placeholder="Батарея, мАч">
-      <input id="camera" type="number" min="1" placeholder="Камера, Мп">
-      <input id="screen" placeholder="Экран (например 6.1 OLED)">
-      <input id="cpu" placeholder="Процессор">
-      <input id="price" type="number" min="1" placeholder="Оценочная цена, ₽">
+      <select id="brand" onchange="updateModels(); updatePricePreview()">
+        <option value="">Бренд</option>
+        <option>Apple</option>
+        <option>Samsung</option>
+        <option>Google</option>
+        <option>Huawei</option>
+        <option>Sony</option>
+      </select>
+
+      <select id="model" onchange="updatePricePreview()">
+        <option value="">Наименование</option>
+      </select>
+
+      <input id="price" placeholder="Оценочная цена, ₽" readonly>
 
       <button type="submit">Добавить запись</button>
     </form>
@@ -69,16 +72,13 @@
       <table>
         <thead>
           <tr>
-            <th>Бренд</th>
-            <th>Модель</th>
-            <th>Год</th>
+            <th>Тип</th>
+            <th>Вид аксессуаров</th>
             <th>Состояние</th>
             <th>Память</th>
-            <th>RAM</th>
-            <th>Батарея</th>
-            <th>Камера</th>
-            <th>Экран</th>
-            <th>CPU</th>
+            <th>Год</th>
+            <th>Бренд</th>
+            <th>Наименование</th>
             <th>Цена</th>
             <th id="actionHead">Действие</th>
           </tr>
