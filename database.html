@@ -1,37 +1,44 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>База данных</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>База оценок смартфонов</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="card">
+    <h2>База оценок смартфонов</h2>
+    <p id="dbRole"></p>
 
-<div class="card">
-<h2>База данных</h2>
-<p id="dbRole"></p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Бренд</th>
+            <th>Модель</th>
+            <th>Год</th>
+            <th>Состояние</th>
+            <th>Память</th>
+            <th>RAM</th>
+            <th>Батарея</th>
+            <th>Камера</th>
+            <th>Экран</th>
+            <th>CPU</th>
+            <th>Цена</th>
+            <th id="dbActionHead">Действие</th>
+          </tr>
+        </thead>
+        <tbody id="dbTable"></tbody>
+      </table>
+    </div>
 
-<table>
-<thead>
-<tr>
-<th>Бренд</th>
-<th>Модель</th>
-<th>Год</th>
-<th>Память</th>
-<th>Состояние</th>
-<th>Цена</th>
-</tr>
-</thead>
-<tbody id="dbTable"></tbody>
-</table>
+    <div class="btn-row">
+      <button onclick="goEditor()">Назад к форме</button>
+      <button class="secondary" onclick="logout()">Выйти</button>
+    </div>
+  </div>
 
-<div class="btn-row">
-<button onclick="goEditor()">Назад</button>
-<button onclick="logout()">Выйти</button>
-</div>
-
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
