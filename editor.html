@@ -1,81 +1,98 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Редактирование</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оценка смартфонов</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="card">
+    <h2>Форма оценки смартфона</h2>
+    <p id="roleText"></p>
+    <p id="guestNote" class="guest-note" style="display:none;">Вы вошли как гость: можно только смотреть записи.</p>
 
-<div class="card">
-<h2>Редактирование смартфонов</h2>
-<p id="roleText"></p>
+    <form id="phoneForm" class="form-grid" onsubmit="event.preventDefault(); addPhone();">
+      <select id="brand" onchange="updateModels()">
+        <option value="">Бренд</option>
+        <option value="Apple">Apple</option>
+        <option value="Samsung">Samsung</option>
+        <option value="Google">Google</option>
+        <option value="Xiaomi">Xiaomi</option>
+        <option value="Huawei">Huawei</option>
+      </select>
 
-<div class="form-grid">
+      <select id="model">
+        <option value="">Модель</option>
+      </select>
 
-<select id="brand" onchange="updateModels()">
-<option value="">Бренд</option>
-<option>Apple</option>
-<option>Samsung</option>
-<option>Google</option>
-<option>Huawei</option>
-<option>Sony</option>
-</select>
+      <select id="year">
+        <option value="">Год модели</option>
+      </select>
 
-<select id="model">
-<option value="">Наименование</option>
-</select>
+      <select id="condition">
+        <option value="">Состояние</option>
+        <option>Новое</option>
+        <option>Отличное</option>
+        <option>Хорошее</option>
+        <option>Среднее</option>
+      </select>
 
-<select id="year">
-<option value="">Год</option>
-<option>2019</option>
-<option>2020</option>
-<option>2021</option>
-</select>
+      <select id="storage">
+        <option value="">Память (ГБ)</option>
+        <option>64</option>
+        <option>128</option>
+        <option>256</option>
+        <option>512</option>
+        <option>1024</option>
+      </select>
 
-<select id="memory">
-<option value="">Память</option>
-<option>64</option>
-<option>128</option>
-<option>256</option>
-<option>512</option>
-</select>
+      <select id="ram">
+        <option value="">RAM (ГБ)</option>
+        <option>4</option>
+        <option>6</option>
+        <option>8</option>
+        <option>12</option>
+        <option>16</option>
+      </select>
 
-<select id="condition">
-<option value="">Состояние</option>
-<option>Хорошее</option>
-<option>Отличное</option>
-<option>Среднее</option>
-</select>
+      <input id="battery" type="number" min="1000" placeholder="Батарея, мАч">
+      <input id="camera" type="number" min="1" placeholder="Камера, Мп">
+      <input id="screen" placeholder="Экран (например 6.1 OLED)">
+      <input id="cpu" placeholder="Процессор">
+      <input id="price" type="number" min="1" placeholder="Оценочная цена, ₽">
 
-<input id="price" placeholder="Цена">
+      <button type="submit">Добавить запись</button>
+    </form>
 
-<button onclick="addPhone()">Добавить</button>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Бренд</th>
+            <th>Модель</th>
+            <th>Год</th>
+            <th>Состояние</th>
+            <th>Память</th>
+            <th>RAM</th>
+            <th>Батарея</th>
+            <th>Камера</th>
+            <th>Экран</th>
+            <th>CPU</th>
+            <th>Цена</th>
+            <th id="actionHead">Действие</th>
+          </tr>
+        </thead>
+        <tbody id="phoneTable"></tbody>
+      </table>
+    </div>
 
-</div>
+    <div class="btn-row">
+      <button onclick="goDB()">Просмотр БД</button>
+      <button class="secondary" onclick="logout()">Выйти</button>
+    </div>
+  </div>
 
-<table>
-<thead>
-<tr>
-<th>Бренд</th>
-<th>Модель</th>
-<th>Год</th>
-<th>Память</th>
-<th>Состояние</th>
-<th>Цена</th>
-<th id="delHead">Удалить</th>
-</tr>
-</thead>
-<tbody id="phoneTable"></tbody>
-</table>
-
-<div class="btn-row">
-<button onclick="goDB()">Перейти в БД</button>
-<button onclick="logout()">Выйти</button>
-</div>
-
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
