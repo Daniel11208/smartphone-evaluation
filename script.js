@@ -67,6 +67,38 @@ const STORAGE_MULTIPLIER = { "64": 0.95, "128": 1, "256": 1.08, "512": 1.15 };
 const YEAR_MULTIPLIER = { "2019": 0.93, "2020": 0.98, "2021": 1.03 };
 const ACCESSORY_KIND_MULTIPLIER = { Наушники: 1.06, Зарядка: 0.96, Чехлы: 0.8, Экраны: 1.1, Батареи: 1.02 };
 
+// ====================== ДОБАВЛЕНО ДЛЯ ПРЕПОДАВАТЕЛЯ ======================
+function initTestData() {
+  if (localStorage.getItem(PHONES_KEY)) return; // уже есть данные — не добавляем повторно
+
+  const testRecords = [
+    // 1. Цена ниже минимума → зажмётся на 500 ₽
+    { itemType: "smartphone", accessoryKind: "", condition: "Среднее", storage: "64", year: "2019", brand: "Apple", model: "iPhone 11", price: 100 },
+    
+    // 2. Цена выше максимума → зажмётся на 200000 ₽
+    { itemType: "smartphone", accessoryKind: "", condition: "Отличное", storage: "512", year: "2021", brand: "Sony", model: "Xperia 1 III", price: 300000 },
+    
+    // 3. Нормальная запись
+    { itemType: "accessory", accessoryKind: "Наушники", condition: "Хорошее", storage: "128", year: "2020", brand: "Apple", model: "AirPods 2", price: 0 },
+    
+    // 4. Граничная по характеристикам
+    { itemType: "smartphone", accessoryKind: "", condition: "Отличное", storage: "512", year: "2021", brand: "Samsung", model: "Galaxy S21", price: 0 },
+    
+    // 5. Аксессуар на минимальной границе
+    { itemType: "accessory", accessoryKind: "Экраны", condition: "Среднее", storage: "64", year: "2019", brand: "Huawei", model: "P30 Pro", price: 400 }
+  ];
+
+  const processed = testRecords.map(item => {
+    item.price = calculatePrice(item);
+    return sanitizeRecord(item);
+  }).filter(Boolean);
+
+  savePhones(processed);
+  console.log("%c✅ Добавлено 5 тестовых записей с проверкой граничных значений (500–200000 ₽)", 
+              "color: lime; font-weight: bold");
+}
+// =====================================================================
+
 function clampPrice(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return 0;
@@ -112,7 +144,6 @@ function sanitizeRecord(input) {
     model: String(input.model || ""),
     price: clampPrice(input.price)
   };
-
   return isValidRecord(item) ? item : null;
 }
 
@@ -149,12 +180,10 @@ function login() {
   const loginValue = document.getElementById("login").value.trim();
   const passwordValue = document.getElementById("password").value.trim();
   const user = USERS.find((u) => u.login === loginValue && u.password === passwordValue);
-
   if (!user) {
     alert("Неверные логин или пароль");
     return;
   }
-
   setSession(user.login, user.role);
   window.location.href = "editor.html";
 }
@@ -171,13 +200,11 @@ function logout() {
 
 function calculatePrice(item) {
   const conditionM = CONDITION_MULTIPLIER[item.condition] || 1;
-
   if (item.itemType === "accessory") {
     const base = ACCESSORY_BASE_PRICES[item.model] || 0;
     const kindM = ACCESSORY_KIND_MULTIPLIER[item.accessoryKind] || 1;
     return clampPrice(base * conditionM * kindM);
   }
-
   const base = SMARTPHONE_BASE_PRICES[item.model] || 0;
   const storageM = STORAGE_MULTIPLIER[item.storage] || 1;
   const yearM = YEAR_MULTIPLIER[item.year] || 1;
@@ -228,12 +255,10 @@ function updatePricePreview() {
     priceInput.value = "";
     return;
   }
-
   if (current.itemType === "accessory" && !current.accessoryKind) {
     priceInput.value = "";
     return;
   }
-
   priceInput.value = String(calculatePrice(current));
 }
 
@@ -292,7 +317,6 @@ function renderTable(tableId, rows, role) {
       action.appendChild(btn);
       tr.appendChild(action);
     }
-
     tbody.appendChild(tr);
   });
 }
@@ -342,7 +366,7 @@ function initEditorPage() {
 
     const normalized = sanitizeRecord(item);
     if (!normalized) {
-      alert("Проверьте поля: неверные данные или выход за допустимые значения");
+      alert("Ошибка добавления:\nПроверьте все поля и границы цены (от 500 до 200000 ₽)");
       return;
     }
 
@@ -380,6 +404,9 @@ function initDatabasePage() {
   };
 }
 
+// ====================== ИНИЦИАЛИЗАЦИЯ ======================
+initTestData();   // ← добавляет тестовые записи с граничными значениями один раз
+
 if (!localStorage.getItem(PHONES_KEY)) {
   savePhones([]);
 } else {
@@ -389,11 +416,9 @@ if (!localStorage.getItem(PHONES_KEY)) {
 if (location.pathname.endsWith("index.html") || location.pathname === "/") {
   initIndexPage();
 }
-
 if (location.pathname.endsWith("editor.html")) {
   initEditorPage();
 }
-
 if (location.pathname.endsWith("database.html")) {
   initDatabasePage();
 }
