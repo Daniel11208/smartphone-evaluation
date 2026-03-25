@@ -58,7 +58,7 @@ function getModelList(type, brand) {
   return type === "smartphone" ? SMARTPHONES[brand] || [] : ACCESSORIES[brand] || [];
 }
 
-// === Управление состоянием полей памяти и года ===
+// Управление полями памяти и года (серые + disabled для аксессуаров)
 function updateFormFields() {
   const type = document.getElementById("itemType")?.value;
   const storageSelect = document.getElementById("storage");
@@ -70,12 +70,9 @@ function updateFormFields() {
 
   storageSelect.disabled = isAccessory;
   yearSelect.disabled = isAccessory;
-
-  // Делаем серыми (визуально)
   storageSelect.style.opacity = isAccessory ? "0.6" : "1";
   yearSelect.style.opacity = isAccessory ? "0.6" : "1";
 
-  // Сбрасываем значения для аксессуаров
   if (isAccessory) {
     storageSelect.value = "";
     yearSelect.value = "";
@@ -96,7 +93,6 @@ function isValidRecord(item) {
     return false;
   }
 
-  // Память и год обязательны ТОЛЬКО для смартфонов
   if (item.itemType === "smartphone") {
     if (!STORAGES.includes(item.storage)) return false;
     if (!YEARS.includes(item.year)) return false;
@@ -104,7 +100,6 @@ function isValidRecord(item) {
 
   const price = Number(item.price);
   if (!Number.isInteger(price) || price < MIN_PRICE || price > MAX_PRICE) return false;
-
   return true;
 }
 
@@ -183,11 +178,13 @@ function updateModels() {
   const type = document.getElementById("itemType")?.value;
   const brand = document.getElementById("brand")?.value;
   const modelSelect = document.getElementById("model");
-  const accessoryKind = document.getElementById("accessoryKind");
+  const accessoryKindSelect = document.getElementById("accessoryKind");
 
   if (!modelSelect) return;
 
+  // Сброс моделей
   modelSelect.innerHTML = '<option value="">Наименование</option>';
+
   getModelList(type, brand).forEach(modelName => {
     const opt = document.createElement("option");
     opt.value = modelName;
@@ -195,9 +192,16 @@ function updateModels() {
     modelSelect.appendChild(opt);
   });
 
-  if (accessoryKind) {
-    accessoryKind.disabled = type !== "accessory";
-    if (type !== "accessory") accessoryKind.value = "";
+  // === ИСПРАВЛЕНИЕ: правильно работаем с "Вид аксессуаров" ===
+  if (accessoryKindSelect) {
+    if (type === "accessory") {
+      accessoryKindSelect.disabled = false;
+      // Важно: сбрасываем на пустое значение при смене типа
+      accessoryKindSelect.value = "";
+    } else {
+      accessoryKindSelect.disabled = true;
+      accessoryKindSelect.value = "";
+    }
   }
 
   updateFormFields();
@@ -234,6 +238,7 @@ function updatePricePreview() {
   priceInput.value = String(calculatePrice(current));
 }
 
+// Остальные функции (createCell, deleteRow, renderTable, init*) без изменений
 function createCell(value) {
   const td = document.createElement("td");
   td.textContent = value;
@@ -273,10 +278,8 @@ function renderTable(tableId, rows, role) {
     tr.appendChild(createCell(row.itemType === "accessory" ? "Аксессуар" : "Смартфон"));
     tr.appendChild(createCell(row.accessoryKind || "-"));
     tr.appendChild(createCell(row.condition));
-
     tr.appendChild(createCell(row.itemType === "smartphone" ? `${row.storage} ГБ` : "—"));
     tr.appendChild(createCell(row.itemType === "smartphone" ? row.year : "—"));
-
     tr.appendChild(createCell(row.brand));
     tr.appendChild(createCell(row.model));
     tr.appendChild(createCell(`${row.price} ₽`));
@@ -295,7 +298,6 @@ function renderTable(tableId, rows, role) {
   });
 }
 
-// Инициализация страниц
 function initIndexPage() {
   if (getRole()) window.location.href = "editor.html";
 }
@@ -314,7 +316,7 @@ function initEditorPage() {
     document.getElementById("guestNote").style.display = "block";
   }
 
-  updateModels();           // важно!
+  updateModels();
   renderTable("phoneTable", getPhones(), role);
 
   window.addItem = () => {
@@ -333,7 +335,6 @@ function initEditorPage() {
 
     item.price = calculatePrice(item);
     const normalized = sanitizeRecord(item);
-
     if (!normalized) {
       alert("Проверьте поля: неверные данные или выход за допустимые значения");
       return;
