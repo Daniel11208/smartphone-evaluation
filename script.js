@@ -32,34 +32,14 @@ const BRANDS = ["Apple", "Samsung", "Google", "Huawei", "Sony"];
 const ACCESSORY_KINDS = ["Наушники", "Зарядка", "Чехлы", "Экраны", "Батареи"];
 
 const SMARTPHONE_BASE_PRICES = {
-  "iPhone 11": 25000,
-  "Galaxy S10": 18000,
-  "Pixel 4": 15000,
-  "P30 Pro": 20000,
-  "Xperia 5": 22000,
-  "iPhone 12": 30000,
-  "Galaxy S20": 27000,
-  "Pixel 5": 28000,
-  "Mate 40 Pro": 35000,
-  "Xperia 1 II": 40000,
-  "iPhone 13": 38000,
-  "Galaxy S21": 32000,
-  "Pixel 6": 29000,
-  "P50 Pro": 45000,
-  "Xperia 1 III": 48000
+  "iPhone 11": 25000, "Galaxy S10": 18000, "Pixel 4": 15000, "P30 Pro": 20000, "Xperia 5": 22000,
+  "iPhone 12": 30000, "Galaxy S20": 27000, "Pixel 5": 28000, "Mate 40 Pro": 35000, "Xperia 1 II": 40000,
+  "iPhone 13": 38000, "Galaxy S21": 32000, "Pixel 6": 29000, "P50 Pro": 45000, "Xperia 1 III": 48000
 };
 
 const ACCESSORY_BASE_PRICES = {
-  "AirPods 2": 5000,
-  "Galaxy Buds": 4000,
-  "Pixel Buds": 3500,
-  "FreeBuds 4": 6000,
-  "WF-1000XM4": 9000,
-  "MagSafe Charger": 2500,
-  "Wireless Charger": 2000,
-  "Pixel Stand": 3000,
-  "SuperCharge": 1500,
-  "LinkBuds Charger": 2000
+  "AirPods 2": 5000, "Galaxy Buds": 4000, "Pixel Buds": 3500, "FreeBuds 4": 6000, "WF-1000XM4": 9000,
+  "MagSafe Charger": 2500, "Wireless Charger": 2000, "Pixel Stand": 3000, "SuperCharge": 1500, "LinkBuds Charger": 2000
 };
 
 const CONDITION_MULTIPLIER = { Отличное: 1, Хорошее: 0.93, Среднее: 0.85 };
@@ -75,16 +55,36 @@ function clampPrice(value) {
 
 function getModelList(type, brand) {
   if (!type || !brand) return [];
-  if (type === "smartphone") return SMARTPHONES[brand] || [];
-  if (type === "accessory") return ACCESSORIES[brand] || [];
-  return [];
+  return type === "smartphone" ? SMARTPHONES[brand] || [] : ACCESSORIES[brand] || [];
+}
+
+// === Управление состоянием полей памяти и года ===
+function updateFormFields() {
+  const type = document.getElementById("itemType")?.value;
+  const storageSelect = document.getElementById("storage");
+  const yearSelect = document.getElementById("year");
+
+  if (!storageSelect || !yearSelect) return;
+
+  const isAccessory = type === "accessory";
+
+  storageSelect.disabled = isAccessory;
+  yearSelect.disabled = isAccessory;
+
+  // Делаем серыми (визуально)
+  storageSelect.style.opacity = isAccessory ? "0.6" : "1";
+  yearSelect.style.opacity = isAccessory ? "0.6" : "1";
+
+  // Сбрасываем значения для аксессуаров
+  if (isAccessory) {
+    storageSelect.value = "";
+    yearSelect.value = "";
+  }
 }
 
 function isValidRecord(item) {
   if (!["smartphone", "accessory"].includes(item.itemType)) return false;
   if (!CONDITIONS.includes(item.condition)) return false;
-  if (!STORAGES.includes(item.storage)) return false;
-  if (!YEARS.includes(item.year)) return false;
   if (!BRANDS.includes(item.brand)) return false;
 
   const allowedModels = getModelList(item.itemType, item.brand);
@@ -96,8 +96,15 @@ function isValidRecord(item) {
     return false;
   }
 
+  // Память и год обязательны ТОЛЬКО для смартфонов
+  if (item.itemType === "smartphone") {
+    if (!STORAGES.includes(item.storage)) return false;
+    if (!YEARS.includes(item.year)) return false;
+  }
+
   const price = Number(item.price);
   if (!Number.isInteger(price) || price < MIN_PRICE || price > MAX_PRICE) return false;
+
   return true;
 }
 
@@ -112,7 +119,6 @@ function sanitizeRecord(input) {
     model: String(input.model || ""),
     price: clampPrice(input.price)
   };
-
   return isValidRecord(item) ? item : null;
 }
 
@@ -127,19 +133,13 @@ function savePhones(phones) {
   localStorage.setItem(PHONES_KEY, JSON.stringify(cleaned));
 }
 
-function getRole() {
-  return localStorage.getItem("role");
-}
-
-function getLogin() {
-  return localStorage.getItem("login") || "unknown";
-}
+function getRole() { return localStorage.getItem("role"); }
+function getLogin() { return localStorage.getItem("login") || "unknown"; }
 
 function setSession(login, role) {
   localStorage.setItem("login", login);
   localStorage.setItem("role", role);
 }
-
 function clearSession() {
   localStorage.removeItem("login");
   localStorage.removeItem("role");
@@ -148,13 +148,8 @@ function clearSession() {
 function login() {
   const loginValue = document.getElementById("login").value.trim();
   const passwordValue = document.getElementById("password").value.trim();
-  const user = USERS.find((u) => u.login === loginValue && u.password === passwordValue);
-
-  if (!user) {
-    alert("Неверные логин или пароль");
-    return;
-  }
-
+  const user = USERS.find(u => u.login === loginValue && u.password === passwordValue);
+  if (!user) { alert("Неверные логин или пароль"); return; }
   setSession(user.login, user.role);
   window.location.href = "editor.html";
 }
@@ -189,25 +184,24 @@ function updateModels() {
   const brand = document.getElementById("brand")?.value;
   const modelSelect = document.getElementById("model");
   const accessoryKind = document.getElementById("accessoryKind");
+
   if (!modelSelect) return;
 
-  modelSelect.innerHTML = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = "Наименование";
-  modelSelect.appendChild(placeholder);
-
-  getModelList(type, brand).forEach((modelName) => {
-    const option = document.createElement("option");
-    option.value = modelName;
-    option.textContent = modelName;
-    modelSelect.appendChild(option);
+  modelSelect.innerHTML = '<option value="">Наименование</option>';
+  getModelList(type, brand).forEach(modelName => {
+    const opt = document.createElement("option");
+    opt.value = modelName;
+    opt.textContent = modelName;
+    modelSelect.appendChild(opt);
   });
 
   if (accessoryKind) {
     accessoryKind.disabled = type !== "accessory";
     if (type !== "accessory") accessoryKind.value = "";
   }
+
+  updateFormFields();
+  updatePricePreview();
 }
 
 function updatePricePreview() {
@@ -224,12 +218,15 @@ function updatePricePreview() {
     model: document.getElementById("model")?.value
   };
 
-  if (!current.itemType || !current.condition || !current.storage || !current.year || !current.brand || !current.model) {
+  if (!current.itemType || !current.condition || !current.brand || !current.model) {
     priceInput.value = "";
     return;
   }
-
   if (current.itemType === "accessory" && !current.accessoryKind) {
+    priceInput.value = "";
+    return;
+  }
+  if (current.itemType === "smartphone" && (!current.storage || !current.year)) {
     priceInput.value = "";
     return;
   }
@@ -256,10 +253,10 @@ function renderTable(tableId, rows, role) {
   const tbody = document.getElementById(tableId);
   if (!tbody) return;
 
-  const cleanRows = Array.isArray(rows) ? rows.map(sanitizeRecord).filter(Boolean) : [];
   tbody.innerHTML = "";
-
+  const cleanRows = Array.isArray(rows) ? rows.map(sanitizeRecord).filter(Boolean) : [];
   const admin = role === "admin";
+
   if (!cleanRows.length) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
@@ -276,8 +273,10 @@ function renderTable(tableId, rows, role) {
     tr.appendChild(createCell(row.itemType === "accessory" ? "Аксессуар" : "Смартфон"));
     tr.appendChild(createCell(row.accessoryKind || "-"));
     tr.appendChild(createCell(row.condition));
-    tr.appendChild(createCell(`${row.storage} ГБ`));
-    tr.appendChild(createCell(row.year));
+
+    tr.appendChild(createCell(row.itemType === "smartphone" ? `${row.storage} ГБ` : "—"));
+    tr.appendChild(createCell(row.itemType === "smartphone" ? row.year : "—"));
+
     tr.appendChild(createCell(row.brand));
     tr.appendChild(createCell(row.model));
     tr.appendChild(createCell(`${row.price} ₽`));
@@ -292,24 +291,18 @@ function renderTable(tableId, rows, role) {
       action.appendChild(btn);
       tr.appendChild(action);
     }
-
     tbody.appendChild(tr);
   });
 }
 
+// Инициализация страниц
 function initIndexPage() {
-  const role = getRole();
-  if (role) {
-    window.location.href = "editor.html";
-  }
+  if (getRole()) window.location.href = "editor.html";
 }
 
 function initEditorPage() {
   const role = getRole();
-  if (!role) {
-    window.location.href = "index.html";
-    return;
-  }
+  if (!role) { window.location.href = "index.html"; return; }
 
   document.getElementById("roleText").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
 
@@ -321,7 +314,7 @@ function initEditorPage() {
     document.getElementById("guestNote").style.display = "block";
   }
 
-  updateModels();
+  updateModels();           // важно!
   renderTable("phoneTable", getPhones(), role);
 
   window.addItem = () => {
@@ -339,8 +332,8 @@ function initEditorPage() {
     };
 
     item.price = calculatePrice(item);
-
     const normalized = sanitizeRecord(item);
+
     if (!normalized) {
       alert("Проверьте поля: неверные данные или выход за допустимые значения");
       return;
@@ -353,20 +346,14 @@ function initEditorPage() {
 
     document.getElementById("phoneForm").reset();
     updateModels();
-    updatePricePreview();
   };
 
-  window.goDB = () => {
-    window.location.href = "database.html";
-  };
+  window.goDB = () => window.location.href = "database.html";
 }
 
 function initDatabasePage() {
   const role = getRole();
-  if (!role) {
-    window.location.href = "index.html";
-    return;
-  }
+  if (!role) { window.location.href = "index.html"; return; }
 
   document.getElementById("dbRole").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
 
@@ -374,26 +361,12 @@ function initDatabasePage() {
   if (role !== "admin" && actionHead) actionHead.style.display = "none";
 
   renderTable("dbTable", getPhones(), role);
-
-  window.goEditor = () => {
-    window.location.href = "editor.html";
-  };
+  window.goEditor = () => window.location.href = "editor.html";
 }
 
-if (!localStorage.getItem(PHONES_KEY)) {
-  savePhones([]);
-} else {
-  savePhones(getPhones());
-}
+// Запуск
+if (!localStorage.getItem(PHONES_KEY)) savePhones([]);
 
-if (location.pathname.endsWith("index.html") || location.pathname === "/") {
-  initIndexPage();
-}
-
-if (location.pathname.endsWith("editor.html")) {
-  initEditorPage();
-}
-
-if (location.pathname.endsWith("database.html")) {
-  initDatabasePage();
-}
+if (location.pathname.endsWith("index.html") || location.pathname === "/") initIndexPage();
+if (location.pathname.endsWith("editor.html")) initEditorPage();
+if (location.pathname.endsWith("database.html")) initDatabasePage();
