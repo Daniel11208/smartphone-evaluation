@@ -31,7 +31,7 @@ const YEARS = ["2019", "2020", "2021"];
 const BRANDS = ["Apple", "Samsung", "Google", "Huawei", "Sony"];
 const ACCESSORY_KINDS = ["Наушники", "Зарядка", "Чехлы", "Экраны", "Батареи"];
 
-const SMARTPHONE_BASE_PRICES = {
+const SMARTPHONE_BASE_PRICES = { /* без изменений */ 
   "iPhone 11": 25000, "Galaxy S10": 18000, "Pixel 4": 15000, "P30 Pro": 20000, "Xperia 5": 22000,
   "iPhone 12": 30000, "Galaxy S20": 27000, "Pixel 5": 28000, "Mate 40 Pro": 35000, "Xperia 1 II": 40000,
   "iPhone 13": 38000, "Galaxy S21": 32000, "Pixel 6": 29000, "P50 Pro": 45000, "Xperia 1 III": 48000
@@ -53,22 +53,33 @@ function clampPrice(value) {
   return Math.max(MIN_PRICE, Math.min(MAX_PRICE, Math.round(num / 100) * 100));
 }
 
-function getModelList(type, brand) {
-  if (!type || !brand) return [];
-  return type === "smartphone" ? SMARTPHONES[brand] || [] : ACCESSORIES[brand] || [];
+function getModelList(type, brand, kind = "") {
+  if (type === "smartphone") return SMARTPHONES[brand] || [];
+  if (type === "accessory" && kind === "Наушники") return ACCESSORIES[brand] || [];
+  return []; // для остальных аксессуаров — пусто
 }
 
 function updateFormFields() {
   const type = document.getElementById("itemType")?.value;
+  const kind = document.getElementById("accessoryKind")?.value;
   const storage = document.getElementById("storage");
   const year = document.getElementById("year");
-  if (!storage || !year) return;
+  const modelSel = document.getElementById("model");
+
+  if (!storage || !year || !modelSel) return;
 
   const isAcc = type === "accessory";
+  const isHeadphones = kind === "Наушники";
+
+  // Память и год — серые для всех аксессуаров
   storage.disabled = isAcc; year.disabled = isAcc;
   storage.style.opacity = isAcc ? "0.6" : "1";
   year.style.opacity = isAcc ? "0.6" : "1";
   if (isAcc) { storage.value = ""; year.value = ""; }
+
+  // Наименование — работает только для Наушников
+  modelSel.disabled = isAcc && !isHeadphones;
+  modelSel.style.opacity = (isAcc && !isHeadphones) ? "0.6" : "1";
 }
 
 function isValidRecord(item) {
@@ -76,11 +87,14 @@ function isValidRecord(item) {
   if (!CONDITIONS.includes(item.condition)) return false;
   if (!BRANDS.includes(item.brand)) return false;
 
-  const models = getModelList(item.itemType, item.brand);
-  if (!models.includes(item.model)) return false;
-
   if (item.itemType === "accessory") {
     if (!ACCESSORY_KINDS.includes(item.accessoryKind)) return false;
+    if (item.accessoryKind === "Наушники") {
+      if (!getModelList("accessory", item.brand, "Наушники").includes(item.model)) return false;
+    } else {
+      // для остальных аксессуаров модель = вид аксессуара
+      if (item.model !== item.accessoryKind) return false;
+    }
   } else if (item.accessoryKind) return false;
 
   if (item.itemType === "smartphone") {
@@ -92,19 +106,28 @@ function isValidRecord(item) {
 }
 
 function sanitizeRecord(input) {
+  let model = String(input.model || "");
+  const kind = String(input.accessoryKind || "");
+
+  // Для не-наушников подставляем вид аксессуара как наименование
+  if (input.itemType === "accessory" && kind !== "Наушники") {
+    model = kind;
+  }
+
   const item = {
     itemType: String(input.itemType || ""),
-    accessoryKind: String(input.accessoryKind || ""),
+    accessoryKind: kind,
     condition: String(input.condition || ""),
     storage: String(input.storage || ""),
     year: String(input.year || ""),
     brand: String(input.brand || ""),
-    model: String(input.model || ""),
+    model: model,
     price: clampPrice(input.price)
   };
   return isValidRecord(item) ? item : null;
 }
 
+// getPhones, savePhones, login, calculatePrice — оставлены почти без изменений
 function getPhones() {
   const raw = JSON.parse(localStorage.getItem(PHONES_KEY) || "[]");
   return Array.isArray(raw) ? raw.map(sanitizeRecord).filter(Boolean) : [];
@@ -128,7 +151,6 @@ function login() {
   setSession(user.login, user.role);
   window.location.href = "editor.html";
 }
-
 function loginGuest() { setSession("guest", "guest"); window.location.href = "editor.html"; }
 function logout() { clearSession(); window.location.href = "index.html"; }
 
@@ -144,26 +166,22 @@ function calculatePrice(item) {
 function updateModels() {
   const type = document.getElementById("itemType")?.value;
   const brand = document.getElementById("brand")?.value;
+  const kind = document.getElementById("accessoryKind")?.value;
   const modelSel = document.getElementById("model");
-  const kindSel = document.getElementById("accessoryKind");
 
   if (!modelSel) return;
 
   modelSel.innerHTML = '<option value="">Наименование</option>';
-  getModelList(type, brand).forEach(m => {
-    const o = document.createElement("option");
-    o.value = m; o.textContent = m;
-    modelSel.appendChild(o);
-  });
 
-  if (kindSel) {
-    if (type === "accessory") {
-      kindSel.disabled = false;
-      kindSel.value = "";
-    } else {
-      kindSel.disabled = true;
-      kindSel.value = "";
-    }
+  if (type === "accessory" && kind === "Наушники") {
+    getModelList("accessory", brand, "Наушники").forEach(m => {
+      const o = document.createElement("option");
+      o.value = m; o.textContent = m;
+      modelSel.appendChild(o);
+    });
+  } else if (type === "accessory") {
+    // для остальных видов — показываем только плейсхолдер (серый)
+    modelSel.innerHTML = '<option value="" selected>— выберите вид аксессуара —</option>';
   }
 
   updateFormFields();
@@ -171,7 +189,7 @@ function updateModels() {
 }
 
 function updateAccessoryKind() {
-  setTimeout(updatePricePreview, 10);
+  updateModels();        // важно — обновляем модель при смене вида
 }
 
 function updatePricePreview() {
@@ -188,21 +206,23 @@ function updatePricePreview() {
     model: document.getElementById("model")?.value
   };
 
-  if (!cur.itemType || !cur.condition || !cur.brand || !cur.model ||
+  if (!cur.itemType || !cur.condition || !cur.brand ||
       (cur.itemType === "accessory" && !cur.accessoryKind) ||
-      (cur.itemType === "smartphone" && (!cur.storage || !cur.year))) {
+      (cur.itemType === "smartphone" && (!cur.storage || !cur.year)) ||
+      (cur.itemType === "accessory" && cur.accessoryKind === "Наушники" && !cur.model)) {
     priceInput.value = "";
     return;
+  }
+
+  // для не-наушников модель = вид
+  if (cur.itemType === "accessory" && cur.accessoryKind !== "Наушники") {
+    cur.model = cur.accessoryKind;
   }
 
   priceInput.value = String(calculatePrice(cur));
 }
 
-function createCell(value) {
-  const td = document.createElement("td");
-  td.textContent = value;
-  return td;
-}
+function createCell(value) { const td = document.createElement("td"); td.textContent = value; return td; }
 
 function deleteRow(index, tableId, role) {
   if (role !== "admin") return;
@@ -254,8 +274,6 @@ function renderTable(tableId, rows, role) {
   });
 }
 
-function initIndexPage() { if (getRole()) window.location.href = "editor.html"; }
-
 function initEditorPage() {
   const role = getRole();
   if (!role) { window.location.href = "index.html"; return; }
@@ -275,19 +293,28 @@ function initEditorPage() {
 
   window.addItem = () => {
     if (role === "guest") return;
+    let modelVal = document.getElementById("model").value;
+    const kind = document.getElementById("accessoryKind").value;
+
+    if (document.getElementById("itemType").value === "accessory" && kind !== "Наушники") {
+      modelVal = kind;
+    }
+
     const item = {
       itemType: document.getElementById("itemType").value,
-      accessoryKind: document.getElementById("accessoryKind").value,
+      accessoryKind: kind,
       condition: document.getElementById("condition").value,
       storage: document.getElementById("storage").value,
       year: document.getElementById("year").value,
       brand: document.getElementById("brand").value,
-      model: document.getElementById("model").value,
+      model: modelVal,
       price: document.getElementById("price").value
     };
+
     item.price = calculatePrice(item);
     const norm = sanitizeRecord(item);
     if (!norm) { alert("Проверьте поля: неверные данные"); return; }
+
     const list = getPhones();
     list.push(norm);
     savePhones(list);
@@ -299,6 +326,8 @@ function initEditorPage() {
   window.goDB = () => window.location.href = "database.html";
 }
 
+// остальные init функции (initIndexPage, initDatabasePage) и запуск оставь как в предыдущей версии
+function initIndexPage() { if (getRole()) window.location.href = "editor.html"; }
 function initDatabasePage() {
   const role = getRole();
   if (!role) { window.location.href = "index.html"; return; }
@@ -309,7 +338,6 @@ function initDatabasePage() {
   window.goEditor = () => window.location.href = "editor.html";
 }
 
-// Запуск
 if (!localStorage.getItem(PHONES_KEY)) savePhones([]);
 
 if (location.pathname.endsWith("index.html") || location.pathname === "/") initIndexPage();
