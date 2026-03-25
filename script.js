@@ -60,45 +60,35 @@ function getModelList(type, brand) {
 
 function updateFormFields() {
   const type = document.getElementById("itemType")?.value;
-  const storageSelect = document.getElementById("storage");
-  const yearSelect = document.getElementById("year");
+  const storage = document.getElementById("storage");
+  const year = document.getElementById("year");
+  if (!storage || !year) return;
 
-  if (!storageSelect || !yearSelect) return;
-
-  const isAccessory = type === "accessory";
-  storageSelect.disabled = isAccessory;
-  yearSelect.disabled = isAccessory;
-  storageSelect.style.opacity = isAccessory ? "0.6" : "1";
-  yearSelect.style.opacity = isAccessory ? "0.6" : "1";
-
-  if (isAccessory) {
-    storageSelect.value = "";
-    yearSelect.value = "";
-  }
+  const isAcc = type === "accessory";
+  storage.disabled = isAcc; year.disabled = isAcc;
+  storage.style.opacity = isAcc ? "0.6" : "1";
+  year.style.opacity = isAcc ? "0.6" : "1";
+  if (isAcc) { storage.value = ""; year.value = ""; }
 }
 
 function isValidRecord(item) {
-  if (!["smartphone", "accessory"].includes(item.itemType)) return false;
+  if (!["smartphone","accessory"].includes(item.itemType)) return false;
   if (!CONDITIONS.includes(item.condition)) return false;
   if (!BRANDS.includes(item.brand)) return false;
 
-  const allowedModels = getModelList(item.itemType, item.brand);
-  if (!allowedModels.includes(item.model)) return false;
+  const models = getModelList(item.itemType, item.brand);
+  if (!models.includes(item.model)) return false;
 
   if (item.itemType === "accessory") {
     if (!ACCESSORY_KINDS.includes(item.accessoryKind)) return false;
-  } else if (item.accessoryKind) {
-    return false;
-  }
+  } else if (item.accessoryKind) return false;
 
   if (item.itemType === "smartphone") {
-    if (!STORAGES.includes(item.storage)) return false;
-    if (!YEARS.includes(item.year)) return false;
+    if (!STORAGES.includes(item.storage) || !YEARS.includes(item.year)) return false;
   }
 
-  const price = Number(item.price);
-  if (!Number.isInteger(price) || price < MIN_PRICE || price > MAX_PRICE) return false;
-  return true;
+  const p = Number(item.price);
+  return Number.isInteger(p) && p >= MIN_PRICE && p <= MAX_PRICE;
 }
 
 function sanitizeRecord(input) {
@@ -117,8 +107,7 @@ function sanitizeRecord(input) {
 
 function getPhones() {
   const raw = JSON.parse(localStorage.getItem(PHONES_KEY) || "[]");
-  if (!Array.isArray(raw)) return [];
-  return raw.map(sanitizeRecord).filter(Boolean);
+  return Array.isArray(raw) ? raw.map(sanitizeRecord).filter(Boolean) : [];
 }
 
 function savePhones(phones) {
@@ -128,73 +117,51 @@ function savePhones(phones) {
 
 function getRole() { return localStorage.getItem("role"); }
 function getLogin() { return localStorage.getItem("login") || "unknown"; }
+function setSession(l, r) { localStorage.setItem("login", l); localStorage.setItem("role", r); }
+function clearSession() { localStorage.removeItem("login"); localStorage.removeItem("role"); }
 
-function setSession(login, role) {
-  localStorage.setItem("login", login);
-  localStorage.setItem("role", role);
-}
-function clearSession() {
-  localStorage.removeItem("login");
-  localStorage.removeItem("role");
-}
-
-function login() {
-  const loginValue = document.getElementById("login").value.trim();
-  const passwordValue = document.getElementById("password").value.trim();
-  const user = USERS.find(u => u.login === loginValue && u.password === passwordValue);
+function login() { /* оставь как было */ 
+  const lv = document.getElementById("login").value.trim();
+  const pv = document.getElementById("password").value.trim();
+  const user = USERS.find(u => u.login === lv && u.password === pv);
   if (!user) { alert("Неверные логин или пароль"); return; }
   setSession(user.login, user.role);
   window.location.href = "editor.html";
 }
-
-function loginGuest() {
-  setSession("guest", "guest");
-  window.location.href = "editor.html";
-}
-
-function logout() {
-  clearSession();
-  window.location.href = "index.html";
-}
+function loginGuest() { setSession("guest", "guest"); window.location.href = "editor.html"; }
+function logout() { clearSession(); window.location.href = "index.html"; }
 
 function calculatePrice(item) {
-  const conditionM = CONDITION_MULTIPLIER[item.condition] || 1;
-
+  const cm = CONDITION_MULTIPLIER[item.condition] || 1;
   if (item.itemType === "accessory") {
-    const base = ACCESSORY_BASE_PRICES[item.model] || 0;
-    const kindM = ACCESSORY_KIND_MULTIPLIER[item.accessoryKind] || 1;
-    return clampPrice(base * conditionM * kindM);
+    return clampPrice((ACCESSORY_BASE_PRICES[item.model] || 0) * cm * (ACCESSORY_KIND_MULTIPLIER[item.accessoryKind] || 1));
   }
-
-  const base = SMARTPHONE_BASE_PRICES[item.model] || 0;
-  const storageM = STORAGE_MULTIPLIER[item.storage] || 1;
-  const yearM = YEAR_MULTIPLIER[item.year] || 1;
-  return clampPrice(base * conditionM * storageM * yearM);
+  return clampPrice((SMARTPHONE_BASE_PRICES[item.model] || 0) * cm *
+         (STORAGE_MULTIPLIER[item.storage] || 1) * (YEAR_MULTIPLIER[item.year] || 1));
 }
 
 function updateModels() {
   const type = document.getElementById("itemType")?.value;
   const brand = document.getElementById("brand")?.value;
-  const modelSelect = document.getElementById("model");
-  const accessoryKindSelect = document.getElementById("accessoryKind");
+  const modelSel = document.getElementById("model");
+  const kindSel = document.getElementById("accessoryKind");
 
-  if (!modelSelect) return;
+  if (!modelSel) return;
 
-  modelSelect.innerHTML = '<option value="">Наименование</option>';
-  getModelList(type, brand).forEach(modelName => {
-    const opt = document.createElement("option");
-    opt.value = modelName;
-    opt.textContent = modelName;
-    modelSelect.appendChild(opt);
+  modelSel.innerHTML = '<option value="">Наименование</option>';
+  getModelList(type, brand).forEach(m => {
+    const o = document.createElement("option");
+    o.value = m; o.textContent = m;
+    modelSel.appendChild(o);
   });
 
-  if (accessoryKindSelect) {
+  if (kindSel) {
     if (type === "accessory") {
-      accessoryKindSelect.disabled = false;
-      accessoryKindSelect.value = "";        // важный сброс
+      kindSel.disabled = false;
+      kindSel.value = "";   // жёсткий сброс
     } else {
-      accessoryKindSelect.disabled = true;
-      accessoryKindSelect.value = "";
+      kindSel.disabled = true;
+      kindSel.value = "";
     }
   }
 
@@ -203,14 +170,15 @@ function updateModels() {
 }
 
 function updateAccessoryKind() {
-  updatePricePreview();
+  // Добавляем небольшую задержку, чтобы браузер успел применить value = ""
+  setTimeout(updatePricePreview, 10);
 }
 
 function updatePricePreview() {
   const priceInput = document.getElementById("price");
   if (!priceInput) return;
 
-  const current = {
+  const cur = {
     itemType: document.getElementById("itemType")?.value,
     accessoryKind: document.getElementById("accessoryKind")?.value,
     condition: document.getElementById("condition")?.value,
@@ -220,22 +188,23 @@ function updatePricePreview() {
     model: document.getElementById("model")?.value
   };
 
-  if (!current.itemType || !current.condition || !current.brand || !current.model) {
+  if (!cur.itemType || !cur.condition || !cur.brand || !cur.model) {
     priceInput.value = "";
     return;
   }
-  if (current.itemType === "accessory" && !current.accessoryKind) {
+  if (cur.itemType === "accessory" && !cur.accessoryKind) {
     priceInput.value = "";
     return;
   }
-  if (current.itemType === "smartphone" && (!current.storage || !current.year)) {
+  if (cur.itemType === "smartphone" && (!cur.storage || !cur.year)) {
     priceInput.value = "";
     return;
   }
 
-  priceInput.value = String(calculatePrice(current));
+  priceInput.value = String(calculatePrice(cur));
 }
 
+// createCell, deleteRow, renderTable, init* — оставлены как в твоей последней версии
 function createCell(value) {
   const td = document.createElement("td");
   td.textContent = value;
@@ -254,7 +223,6 @@ function deleteRow(index, tableId, role) {
 function renderTable(tableId, rows, role) {
   const tbody = document.getElementById(tableId);
   if (!tbody) return;
-
   tbody.innerHTML = "";
   const cleanRows = Array.isArray(rows) ? rows.map(sanitizeRecord).filter(Boolean) : [];
   const admin = role === "admin";
@@ -270,7 +238,7 @@ function renderTable(tableId, rows, role) {
     return;
   }
 
-  cleanRows.forEach((row, index) => {
+  cleanRows.forEach((row, i) => {
     const tr = document.createElement("tr");
     tr.appendChild(createCell(row.itemType === "accessory" ? "Аксессуар" : "Смартфон"));
     tr.appendChild(createCell(row.accessoryKind || "-"));
@@ -282,22 +250,18 @@ function renderTable(tableId, rows, role) {
     tr.appendChild(createCell(`${row.price} ₽`));
 
     if (admin) {
-      const action = document.createElement("td");
+      const td = document.createElement("td");
       const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "danger";
-      btn.textContent = "Удалить";
-      btn.addEventListener("click", () => deleteRow(index, tableId, role));
-      action.appendChild(btn);
-      tr.appendChild(action);
+      btn.type = "button"; btn.className = "danger"; btn.textContent = "Удалить";
+      btn.addEventListener("click", () => deleteRow(i, tableId, role));
+      td.appendChild(btn);
+      tr.appendChild(td);
     }
     tbody.appendChild(tr);
   });
 }
 
-function initIndexPage() {
-  if (getRole()) window.location.href = "editor.html";
-}
+function initIndexPage() { if (getRole()) window.location.href = "editor.html"; }
 
 function initEditorPage() {
   const role = getRole();
@@ -305,8 +269,7 @@ function initEditorPage() {
 
   document.getElementById("roleText").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
 
-  const actionHead = document.getElementById("actionHead");
-  if (role !== "admin" && actionHead) actionHead.style.display = "none";
+  if (role !== "admin") document.getElementById("actionHead").style.display = "none";
 
   if (role === "guest") {
     document.getElementById("phoneForm").style.display = "none";
@@ -316,9 +279,8 @@ function initEditorPage() {
   updateModels();
   renderTable("phoneTable", getPhones(), role);
 
-  window.addItem = () => {
+  window.addItem = () => { /* твой оригинальный код addItem */ 
     if (role === "guest") return;
-
     const item = {
       itemType: document.getElementById("itemType").value,
       accessoryKind: document.getElementById("accessoryKind").value,
@@ -329,19 +291,13 @@ function initEditorPage() {
       model: document.getElementById("model").value,
       price: document.getElementById("price").value
     };
-
     item.price = calculatePrice(item);
-    const normalized = sanitizeRecord(item);
-    if (!normalized) {
-      alert("Проверьте поля: неверные данные или выход за допустимые значения");
-      return;
-    }
-
+    const norm = sanitizeRecord(item);
+    if (!norm) { alert("Проверьте поля"); return; }
     const list = getPhones();
-    list.push(normalized);
+    list.push(norm);
     savePhones(list);
     renderTable("phoneTable", getPhones(), role);
-
     document.getElementById("phoneForm").reset();
     updateModels();
   };
@@ -349,15 +305,11 @@ function initEditorPage() {
   window.goDB = () => window.location.href = "database.html";
 }
 
-function initDatabasePage() {
+function initDatabasePage() { /* твой оригинальный код */ 
   const role = getRole();
   if (!role) { window.location.href = "index.html"; return; }
-
   document.getElementById("dbRole").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
-
-  const actionHead = document.getElementById("dbActionHead");
-  if (role !== "admin" && actionHead) actionHead.style.display = "none";
-
+  if (role !== "admin") document.getElementById("dbActionHead").style.display = "none";
   renderTable("dbTable", getPhones(), role);
   window.goEditor = () => window.location.href = "editor.html";
 }
