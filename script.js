@@ -120,7 +120,7 @@ function getLogin() { return localStorage.getItem("login") || "unknown"; }
 function setSession(l, r) { localStorage.setItem("login", l); localStorage.setItem("role", r); }
 function clearSession() { localStorage.removeItem("login"); localStorage.removeItem("role"); }
 
-function login() { /* оставь как было */ 
+function login() {
   const lv = document.getElementById("login").value.trim();
   const pv = document.getElementById("password").value.trim();
   const user = USERS.find(u => u.login === lv && u.password === pv);
@@ -128,6 +128,7 @@ function login() { /* оставь как было */
   setSession(user.login, user.role);
   window.location.href = "editor.html";
 }
+
 function loginGuest() { setSession("guest", "guest"); window.location.href = "editor.html"; }
 function logout() { clearSession(); window.location.href = "index.html"; }
 
@@ -158,7 +159,7 @@ function updateModels() {
   if (kindSel) {
     if (type === "accessory") {
       kindSel.disabled = false;
-      kindSel.value = "";   // жёсткий сброс
+      kindSel.value = "";
     } else {
       kindSel.disabled = true;
       kindSel.value = "";
@@ -170,7 +171,6 @@ function updateModels() {
 }
 
 function updateAccessoryKind() {
-  // Добавляем небольшую задержку, чтобы браузер успел применить value = ""
   setTimeout(updatePricePreview, 10);
 }
 
@@ -188,15 +188,9 @@ function updatePricePreview() {
     model: document.getElementById("model")?.value
   };
 
-  if (!cur.itemType || !cur.condition || !cur.brand || !cur.model) {
-    priceInput.value = "";
-    return;
-  }
-  if (cur.itemType === "accessory" && !cur.accessoryKind) {
-    priceInput.value = "";
-    return;
-  }
-  if (cur.itemType === "smartphone" && (!cur.storage || !cur.year)) {
+  if (!cur.itemType || !cur.condition || !cur.brand || !cur.model ||
+      (cur.itemType === "accessory" && !cur.accessoryKind) ||
+      (cur.itemType === "smartphone" && (!cur.storage || !cur.year))) {
     priceInput.value = "";
     return;
   }
@@ -204,7 +198,6 @@ function updatePricePreview() {
   priceInput.value = String(calculatePrice(cur));
 }
 
-// createCell, deleteRow, renderTable, init* — оставлены как в твоей последней версии
 function createCell(value) {
   const td = document.createElement("td");
   td.textContent = value;
@@ -269,7 +262,8 @@ function initEditorPage() {
 
   document.getElementById("roleText").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
 
-  if (role !== "admin") document.getElementById("actionHead").style.display = "none";
+  if (role !== "admin" && document.getElementById("actionHead")) 
+    document.getElementById("actionHead").style.display = "none";
 
   if (role === "guest") {
     document.getElementById("phoneForm").style.display = "none";
@@ -279,7 +273,7 @@ function initEditorPage() {
   updateModels();
   renderTable("phoneTable", getPhones(), role);
 
-  window.addItem = () => { /* твой оригинальный код addItem */ 
+  window.addItem = () => {
     if (role === "guest") return;
     const item = {
       itemType: document.getElementById("itemType").value,
@@ -293,7 +287,7 @@ function initEditorPage() {
     };
     item.price = calculatePrice(item);
     const norm = sanitizeRecord(item);
-    if (!norm) { alert("Проверьте поля"); return; }
+    if (!norm) { alert("Проверьте поля: неверные данные"); return; }
     const list = getPhones();
     list.push(norm);
     savePhones(list);
@@ -305,11 +299,12 @@ function initEditorPage() {
   window.goDB = () => window.location.href = "database.html";
 }
 
-function initDatabasePage() { /* твой оригинальный код */ 
+function initDatabasePage() {
   const role = getRole();
   if (!role) { window.location.href = "index.html"; return; }
   document.getElementById("dbRole").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
-  if (role !== "admin") document.getElementById("dbActionHead").style.display = "none";
+  if (role !== "admin" && document.getElementById("dbActionHead")) 
+    document.getElementById("dbActionHead").style.display = "none";
   renderTable("dbTable", getPhones(), role);
   window.goEditor = () => window.location.href = "editor.html";
 }
