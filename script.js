@@ -31,7 +31,7 @@ const YEARS = ["2019", "2020", "2021"];
 const BRANDS = ["Apple", "Samsung", "Google", "Huawei", "Sony"];
 const ACCESSORY_KINDS = ["Наушники", "Зарядка", "Чехлы", "Экраны", "Батареи"];
 
-const SMARTPHONE_BASE_PRICES = { /* без изменений */ 
+const SMARTPHONE_BASE_PRICES = {
   "iPhone 11": 25000, "Galaxy S10": 18000, "Pixel 4": 15000, "P30 Pro": 20000, "Xperia 5": 22000,
   "iPhone 12": 30000, "Galaxy S20": 27000, "Pixel 5": 28000, "Mate 40 Pro": 35000, "Xperia 1 II": 40000,
   "iPhone 13": 38000, "Galaxy S21": 32000, "Pixel 6": 29000, "P50 Pro": 45000, "Xperia 1 III": 48000
@@ -53,33 +53,31 @@ function clampPrice(value) {
   return Math.max(MIN_PRICE, Math.min(MAX_PRICE, Math.round(num / 100) * 100));
 }
 
-function getModelList(type, brand, kind = "") {
+function getModelList(type, brand, kind) {
   if (type === "smartphone") return SMARTPHONES[brand] || [];
   if (type === "accessory" && kind === "Наушники") return ACCESSORIES[brand] || [];
-  return []; // для остальных аксессуаров — пусто
+  return [];
 }
 
 function updateFormFields() {
-  const type = document.getElementById("itemType")?.value;
-  const kind = document.getElementById("accessoryKind")?.value;
+  const type = document.getElementById("itemType").value;
+  const kind = document.getElementById("accessoryKind").value;
+  const modelSel = document.getElementById("model");
   const storage = document.getElementById("storage");
   const year = document.getElementById("year");
-  const modelSel = document.getElementById("model");
 
-  if (!storage || !year || !modelSel) return;
-
-  const isAcc = type === "accessory";
+  const isAccessory = type === "accessory";
   const isHeadphones = kind === "Наушники";
 
-  // Память и год — серые для всех аксессуаров
-  storage.disabled = isAcc; year.disabled = isAcc;
-  storage.style.opacity = isAcc ? "0.6" : "1";
-  year.style.opacity = isAcc ? "0.6" : "1";
-  if (isAcc) { storage.value = ""; year.value = ""; }
+  // Память и год серые для всех аксессуаров
+  storage.disabled = isAccessory;
+  year.disabled = isAccessory;
+  storage.style.opacity = isAccessory ? "0.6" : "1";
+  year.style.opacity = isAccessory ? "0.6" : "1";
 
-  // Наименование — работает только для Наушников
-  modelSel.disabled = isAcc && !isHeadphones;
-  modelSel.style.opacity = (isAcc && !isHeadphones) ? "0.6" : "1";
+  // Наименование активно только для Наушников
+  modelSel.disabled = isAccessory && !isHeadphones;
+  modelSel.style.opacity = (isAccessory && !isHeadphones) ? "0.6" : "1";
 }
 
 function isValidRecord(item) {
@@ -92,10 +90,9 @@ function isValidRecord(item) {
     if (item.accessoryKind === "Наушники") {
       if (!getModelList("accessory", item.brand, "Наушники").includes(item.model)) return false;
     } else {
-      // для остальных аксессуаров модель = вид аксессуара
       if (item.model !== item.accessoryKind) return false;
     }
-  } else if (item.accessoryKind) return false;
+  }
 
   if (item.itemType === "smartphone") {
     if (!STORAGES.includes(item.storage) || !YEARS.includes(item.year)) return false;
@@ -107,16 +104,13 @@ function isValidRecord(item) {
 
 function sanitizeRecord(input) {
   let model = String(input.model || "");
-  const kind = String(input.accessoryKind || "");
-
-  // Для не-наушников подставляем вид аксессуара как наименование
-  if (input.itemType === "accessory" && kind !== "Наушники") {
-    model = kind;
+  if (input.itemType === "accessory" && input.accessoryKind !== "Наушники") {
+    model = input.accessoryKind;
   }
 
   const item = {
     itemType: String(input.itemType || ""),
-    accessoryKind: kind,
+    accessoryKind: String(input.accessoryKind || ""),
     condition: String(input.condition || ""),
     storage: String(input.storage || ""),
     year: String(input.year || ""),
@@ -127,7 +121,6 @@ function sanitizeRecord(input) {
   return isValidRecord(item) ? item : null;
 }
 
-// getPhones, savePhones, login, calculatePrice — оставлены почти без изменений
 function getPhones() {
   const raw = JSON.parse(localStorage.getItem(PHONES_KEY) || "[]");
   return Array.isArray(raw) ? raw.map(sanitizeRecord).filter(Boolean) : [];
@@ -157,19 +150,17 @@ function logout() { clearSession(); window.location.href = "index.html"; }
 function calculatePrice(item) {
   const cm = CONDITION_MULTIPLIER[item.condition] || 1;
   if (item.itemType === "accessory") {
-    return clampPrice((ACCESSORY_BASE_PRICES[item.model] || 0) * cm * (ACCESSORY_KIND_MULTIPLIER[item.accessoryKind] || 1));
+    return clampPrice((ACCESSORY_BASE_PRICES[item.model] || ACCESSORY_BASE_PRICES[item.accessoryKind] || 0) * cm * (ACCESSORY_KIND_MULTIPLIER[item.accessoryKind] || 1));
   }
   return clampPrice((SMARTPHONE_BASE_PRICES[item.model] || 0) * cm *
          (STORAGE_MULTIPLIER[item.storage] || 1) * (YEAR_MULTIPLIER[item.year] || 1));
 }
 
 function updateModels() {
-  const type = document.getElementById("itemType")?.value;
-  const brand = document.getElementById("brand")?.value;
-  const kind = document.getElementById("accessoryKind")?.value;
+  const type = document.getElementById("itemType").value;
+  const brand = document.getElementById("brand").value;
+  const kind = document.getElementById("accessoryKind").value;
   const modelSel = document.getElementById("model");
-
-  if (!modelSel) return;
 
   modelSel.innerHTML = '<option value="">Наименование</option>';
 
@@ -180,8 +171,7 @@ function updateModels() {
       modelSel.appendChild(o);
     });
   } else if (type === "accessory") {
-    // для остальных видов — показываем только плейсхолдер (серый)
-    modelSel.innerHTML = '<option value="" selected>— выберите вид аксессуара —</option>';
+    modelSel.innerHTML = '<option value="" selected disabled>— не требуется —</option>';
   }
 
   updateFormFields();
@@ -189,21 +179,29 @@ function updateModels() {
 }
 
 function updateAccessoryKind() {
-  updateModels();        // важно — обновляем модель при смене вида
+  updateModels();
 }
 
 function updatePricePreview() {
   const priceInput = document.getElementById("price");
   if (!priceInput) return;
 
+  let model = document.getElementById("model").value;
+  const kind = document.getElementById("accessoryKind").value;
+  const type = document.getElementById("itemType").value;
+
+  if (type === "accessory" && kind !== "Наушники") {
+    model = kind;
+  }
+
   const cur = {
-    itemType: document.getElementById("itemType")?.value,
-    accessoryKind: document.getElementById("accessoryKind")?.value,
-    condition: document.getElementById("condition")?.value,
-    storage: document.getElementById("storage")?.value,
-    year: document.getElementById("year")?.value,
-    brand: document.getElementById("brand")?.value,
-    model: document.getElementById("model")?.value
+    itemType: type,
+    accessoryKind: kind,
+    condition: document.getElementById("condition").value,
+    storage: document.getElementById("storage").value,
+    year: document.getElementById("year").value,
+    brand: document.getElementById("brand").value,
+    model: model
   };
 
   if (!cur.itemType || !cur.condition || !cur.brand ||
@@ -214,15 +212,14 @@ function updatePricePreview() {
     return;
   }
 
-  // для не-наушников модель = вид
-  if (cur.itemType === "accessory" && cur.accessoryKind !== "Наушники") {
-    cur.model = cur.accessoryKind;
-  }
-
   priceInput.value = String(calculatePrice(cur));
 }
 
-function createCell(value) { const td = document.createElement("td"); td.textContent = value; return td; }
+function createCell(value) {
+  const td = document.createElement("td");
+  td.textContent = value || "—";
+  return td;
+}
 
 function deleteRow(index, tableId, role) {
   if (role !== "admin") return;
@@ -254,7 +251,7 @@ function renderTable(tableId, rows, role) {
   cleanRows.forEach((row, i) => {
     const tr = document.createElement("tr");
     tr.appendChild(createCell(row.itemType === "accessory" ? "Аксессуар" : "Смартфон"));
-    tr.appendChild(createCell(row.accessoryKind || "-"));
+    tr.appendChild(createCell(row.accessoryKind));
     tr.appendChild(createCell(row.condition));
     tr.appendChild(createCell(row.itemType === "smartphone" ? `${row.storage} ГБ` : "—"));
     tr.appendChild(createCell(row.itemType === "smartphone" ? row.year : "—"));
@@ -280,8 +277,7 @@ function initEditorPage() {
 
   document.getElementById("roleText").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
 
-  if (role !== "admin" && document.getElementById("actionHead")) 
-    document.getElementById("actionHead").style.display = "none";
+  if (role !== "admin") document.getElementById("actionHead").style.display = "none";
 
   if (role === "guest") {
     document.getElementById("phoneForm").style.display = "none";
@@ -293,15 +289,17 @@ function initEditorPage() {
 
   window.addItem = () => {
     if (role === "guest") return;
+
     let modelVal = document.getElementById("model").value;
     const kind = document.getElementById("accessoryKind").value;
+    const type = document.getElementById("itemType").value;
 
-    if (document.getElementById("itemType").value === "accessory" && kind !== "Наушники") {
+    if (type === "accessory" && kind !== "Наушники") {
       modelVal = kind;
     }
 
     const item = {
-      itemType: document.getElementById("itemType").value,
+      itemType: type,
       accessoryKind: kind,
       condition: document.getElementById("condition").value,
       storage: document.getElementById("storage").value,
@@ -319,6 +317,7 @@ function initEditorPage() {
     list.push(norm);
     savePhones(list);
     renderTable("phoneTable", getPhones(), role);
+
     document.getElementById("phoneForm").reset();
     updateModels();
   };
@@ -326,18 +325,18 @@ function initEditorPage() {
   window.goDB = () => window.location.href = "database.html";
 }
 
-// остальные init функции (initIndexPage, initDatabasePage) и запуск оставь как в предыдущей версии
 function initIndexPage() { if (getRole()) window.location.href = "editor.html"; }
+
 function initDatabasePage() {
   const role = getRole();
   if (!role) { window.location.href = "index.html"; return; }
   document.getElementById("dbRole").textContent = `Пользователь: ${getLogin()} | Роль: ${role}`;
-  if (role !== "admin" && document.getElementById("dbActionHead")) 
-    document.getElementById("dbActionHead").style.display = "none";
+  if (role !== "admin") document.getElementById("dbActionHead").style.display = "none";
   renderTable("dbTable", getPhones(), role);
   window.goEditor = () => window.location.href = "editor.html";
 }
 
+// Запуск
 if (!localStorage.getItem(PHONES_KEY)) savePhones([]);
 
 if (location.pathname.endsWith("index.html") || location.pathname === "/") initIndexPage();
