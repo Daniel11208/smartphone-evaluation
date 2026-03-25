@@ -58,7 +58,6 @@ function getModelList(type, brand) {
   return type === "smartphone" ? SMARTPHONES[brand] || [] : ACCESSORIES[brand] || [];
 }
 
-// Управление полями памяти и года (серые + disabled для аксессуаров)
 function updateFormFields() {
   const type = document.getElementById("itemType")?.value;
   const storageSelect = document.getElementById("storage");
@@ -67,7 +66,6 @@ function updateFormFields() {
   if (!storageSelect || !yearSelect) return;
 
   const isAccessory = type === "accessory";
-
   storageSelect.disabled = isAccessory;
   yearSelect.disabled = isAccessory;
   storageSelect.style.opacity = isAccessory ? "0.6" : "1";
@@ -182,9 +180,7 @@ function updateModels() {
 
   if (!modelSelect) return;
 
-  // Сброс моделей
   modelSelect.innerHTML = '<option value="">Наименование</option>';
-
   getModelList(type, brand).forEach(modelName => {
     const opt = document.createElement("option");
     opt.value = modelName;
@@ -192,12 +188,10 @@ function updateModels() {
     modelSelect.appendChild(opt);
   });
 
-  // === ИСПРАВЛЕНИЕ: правильно работаем с "Вид аксессуаров" ===
   if (accessoryKindSelect) {
     if (type === "accessory") {
       accessoryKindSelect.disabled = false;
-      // Важно: сбрасываем на пустое значение при смене типа
-      accessoryKindSelect.value = "";
+      accessoryKindSelect.value = "";        // важный сброс
     } else {
       accessoryKindSelect.disabled = true;
       accessoryKindSelect.value = "";
@@ -205,6 +199,10 @@ function updateModels() {
   }
 
   updateFormFields();
+  updatePricePreview();
+}
+
+function updateAccessoryKind() {
   updatePricePreview();
 }
 
@@ -238,7 +236,6 @@ function updatePricePreview() {
   priceInput.value = String(calculatePrice(current));
 }
 
-// Остальные функции (createCell, deleteRow, renderTable, init*) без изменений
 function createCell(value) {
   const td = document.createElement("td");
   td.textContent = value;
