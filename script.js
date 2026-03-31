@@ -61,23 +61,49 @@ function getModelList(type, brand, kind) {
 
 function updateFormFields() {
   const type = document.getElementById("itemType").value;
-  const kind = document.getElementById("accessoryKind").value;
-  const modelSel = document.getElementById("model");
+
+  const accessoryKind = document.getElementById("accessoryKind");
+  const model = document.getElementById("model");
   const storage = document.getElementById("storage");
   const year = document.getElementById("year");
 
+  const isSmartphone = type === "smartphone";
   const isAccessory = type === "accessory";
-  const isHeadphones = kind === "Наушники";
+  const isHeadphones = accessoryKind.value === "Наушники";
 
-  // Память и год серые для всех аксессуаров
-  storage.disabled = isAccessory;
-  year.disabled = isAccessory;
-  storage.style.opacity = isAccessory ? "0.6" : "1";
-  year.style.opacity = isAccessory ? "0.6" : "1";
+  // смартфон
+  if (isSmartphone) {
+    accessoryKind.disabled = true;
+    accessoryKind.value = "";
+    accessoryKind.style.opacity = "0.6";
 
-  // Наименование активно только для Наушников
-  modelSel.disabled = isAccessory && !isHeadphones;
-  modelSel.style.opacity = (isAccessory && !isHeadphones) ? "0.6" : "1";
+    storage.disabled = false;
+    year.disabled = false;
+
+    model.disabled = false;
+  }
+
+  // аксессуар
+  if (isAccessory) {
+    accessoryKind.disabled = false;
+
+    storage.disabled = true;
+    year.disabled = true;
+
+    model.disabled = !isHeadphones;
+
+    if (!isHeadphones) {
+      model.innerHTML = '<option value="">— не требуется —</option>';
+    }
+  }
+
+  // если ничего не выбрано
+  if (!type) {
+    accessoryKind.disabled = false;
+    storage.disabled = false;
+    year.disabled = false;
+    model.disabled = false;
+  }
 }
 
 function isValidRecord(item) {
@@ -164,20 +190,31 @@ function updateModels() {
 
   modelSel.innerHTML = '<option value="">Наименование</option>';
 
-  if (type === "accessory" && kind === "Наушники") {
-    getModelList("accessory", brand, "Наушники").forEach(m => {
+  if (type === "smartphone") {
+    (SMARTPHONES[brand] || []).forEach(m => {
       const o = document.createElement("option");
-      o.value = m; o.textContent = m;
+      o.value = m;
+      o.textContent = m;
       modelSel.appendChild(o);
     });
-  } else if (type === "accessory") {
+  }
+
+  else if (type === "accessory" && kind === "Наушники") {
+    (ACCESSORIES[brand] || []).forEach(m => {
+      const o = document.createElement("option");
+      o.value = m;
+      o.textContent = m;
+      modelSel.appendChild(o);
+    });
+  }
+
+  else if (type === "accessory") {
     modelSel.innerHTML = '<option value="" selected disabled>— не требуется —</option>';
   }
 
   updateFormFields();
   updatePricePreview();
 }
-
 function updateAccessoryKind() {
   updateModels();
 }
