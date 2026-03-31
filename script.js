@@ -69,13 +69,11 @@ function updateFormFields() {
 
   const isSmartphone = type === "smartphone";
   const isAccessory = type === "accessory";
-  const isHeadphones = accessoryKind.value === "Наушники";
 
-  // смартфон
+  // === СМАРТФОН ===
   if (isSmartphone) {
-    accessoryKind.disabled = true;
     accessoryKind.value = "";
-    accessoryKind.style.opacity = "0.6";
+    accessoryKind.disabled = true;
 
     storage.disabled = false;
     year.disabled = false;
@@ -83,22 +81,27 @@ function updateFormFields() {
     model.disabled = false;
   }
 
-  // аксессуар
-  if (isAccessory) {
+  // === АКСЕССУАР ===
+  else if (isAccessory) {
     accessoryKind.disabled = false;
 
+    storage.value = "";
+    year.value = "";
     storage.disabled = true;
     year.disabled = true;
 
-    model.disabled = !isHeadphones;
+    const isHeadphones = accessoryKind.value === "Наушники";
 
-    if (!isHeadphones) {
+    if (isHeadphones) {
+      model.disabled = false;
+    } else {
+      model.disabled = true;
       model.innerHTML = '<option value="">— не требуется —</option>';
     }
   }
 
-  // если ничего не выбрано
-  if (!type) {
+  // === НИЧЕГО НЕ ВЫБРАНО ===
+  else {
     accessoryKind.disabled = false;
     storage.disabled = false;
     year.disabled = false;
@@ -188,51 +191,49 @@ function updateModels() {
   const kind = document.getElementById("accessoryKind").value;
   const modelSel = document.getElementById("model");
 
-  // очищаем список
+  // ВСЕГДА чистим
   modelSel.innerHTML = '<option value="">Наименование</option>';
 
-  // ❗ ВАЖНО: если бренд не выбран — ничего не делаем
-  if (!brand) {
-    updateFormFields();
-    updatePricePreview();
-    return;
-  }
+  // если бренд пуст → ничего не делаем
+  if (!brand) return;
 
-  // ===== СМАРТФОН =====
+  // === СМАРТФОН ===
   if (type === "smartphone") {
-    const models = SMARTPHONES[brand];
+    const list = SMARTPHONES[brand];
 
-    if (models) {
-      models.forEach(m => {
-        const o = document.createElement("option");
-        o.value = m;
-        o.textContent = m;
-        modelSel.appendChild(o);
+    if (list && list.length) {
+      list.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        modelSel.appendChild(opt);
       });
     }
   }
 
-  // ===== АКСЕССУАР =====
-  else if (type === "accessory" && kind === "Наушники") {
-    const models = ACCESSORIES[brand];
-
-    if (models) {
-      models.forEach(m => {
-        const o = document.createElement("option");
-        o.value = m;
-        o.textContent = m;
-        modelSel.appendChild(o);
-      });
-    }
-  }
-
+  // === АКСЕССУАР ===
   else if (type === "accessory") {
-    modelSel.innerHTML = '<option value="" selected disabled>— не требуется —</option>';
+
+    if (kind === "Наушники") {
+      const list = ACCESSORIES[brand];
+
+      if (list && list.length) {
+        list.forEach(m => {
+          const opt = document.createElement("option");
+          opt.value = m;
+          opt.textContent = m;
+          modelSel.appendChild(opt);
+        });
+      }
+    } else {
+      modelSel.innerHTML = '<option value="">— не требуется —</option>';
+    }
   }
 
   updateFormFields();
   updatePricePreview();
 }
+
 function updateAccessoryKind() {
   updateModels();
 }
