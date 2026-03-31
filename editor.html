@@ -13,13 +13,14 @@
     <p id="guestNote" class="guest-note" style="display:none;">Вы вошли как гость: можно только смотреть записи.</p>
 
     <form id="phoneForm" class="form-grid" onsubmit="event.preventDefault(); addItem();">
-      <select id="itemType" onchange="updateModels(); updatePricePreview();">
+
+      <select id="itemType" onchange="updateFormFields(); updateModels(); updatePricePreview();">
         <option value="">Тип записи</option>
         <option value="smartphone">Смартфон</option>
         <option value="accessory">Аксессуар</option>
       </select>
 
-      <select id="accessoryKind" onchange="updateAccessoryKind()">
+      <select id="accessoryKind" onchange="updateFormFields(); updateModels();">
         <option value="">Вид аксессуаров</option>
         <option>Наушники</option>
         <option>Зарядка</option>
