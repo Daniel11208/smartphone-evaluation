@@ -188,24 +188,42 @@ function updateModels() {
   const kind = document.getElementById("accessoryKind").value;
   const modelSel = document.getElementById("model");
 
+  // очищаем список
   modelSel.innerHTML = '<option value="">Наименование</option>';
 
-  if (type === "smartphone") {
-    (SMARTPHONES[brand] || []).forEach(m => {
-      const o = document.createElement("option");
-      o.value = m;
-      o.textContent = m;
-      modelSel.appendChild(o);
-    });
+  // ❗ ВАЖНО: если бренд не выбран — ничего не делаем
+  if (!brand) {
+    updateFormFields();
+    updatePricePreview();
+    return;
   }
 
+  // ===== СМАРТФОН =====
+  if (type === "smartphone") {
+    const models = SMARTPHONES[brand];
+
+    if (models) {
+      models.forEach(m => {
+        const o = document.createElement("option");
+        o.value = m;
+        o.textContent = m;
+        modelSel.appendChild(o);
+      });
+    }
+  }
+
+  // ===== АКСЕССУАР =====
   else if (type === "accessory" && kind === "Наушники") {
-    (ACCESSORIES[brand] || []).forEach(m => {
-      const o = document.createElement("option");
-      o.value = m;
-      o.textContent = m;
-      modelSel.appendChild(o);
-    });
+    const models = ACCESSORIES[brand];
+
+    if (models) {
+      models.forEach(m => {
+        const o = document.createElement("option");
+        o.value = m;
+        o.textContent = m;
+        modelSel.appendChild(o);
+      });
+    }
   }
 
   else if (type === "accessory") {
