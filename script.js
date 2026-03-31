@@ -340,6 +340,7 @@ function initEditorPage() {
     document.getElementById("guestNote").style.display = "block";
   }
 
+  updateFormFields();
   updateModels();
   renderTable("phoneTable", getPhones(), role);
 
